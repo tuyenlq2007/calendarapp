@@ -39,6 +39,43 @@ create table public.calendar_entries (
   )
 );
 
+create or replace function public.bump_calendar_entry_version()
+returns trigger
+language plpgsql
+as $$
+begin
+  if row(
+    new.gregorian_date,
+    new.tibetan_date_text,
+    new.title_en,
+    new.title_bo,
+    new.description_en,
+    new.description_bo,
+    new.status,
+    new.published_at
+  ) is distinct from row(
+    old.gregorian_date,
+    old.tibetan_date_text,
+    old.title_en,
+    old.title_bo,
+    old.description_en,
+    old.description_bo,
+    old.status,
+    old.published_at
+  ) then
+    new.version = nextval(pg_get_serial_sequence('public.calendar_entries', 'version')::regclass);
+    new.updated_at = now();
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger calendar_entries_bump_version
+  before update on public.calendar_entries
+  for each row
+  execute function public.bump_calendar_entry_version();
+
 alter table public.calendar_entries enable row level security;
 
 grant select on table public.calendar_entries to anon;
@@ -47,4 +84,7 @@ create policy "Anonymous users can read published calendar entries"
   on public.calendar_entries
   for select
   to anon
-  using (status in ('published','archived'));
+  using (
+    status = 'published'
+    or (status = 'archived' and published_at is not null)
+  );

@@ -5,7 +5,7 @@ import 'package:mobile/features/calendar/data/calendar_sync_service.dart';
 void main() {
   test('failed page does not advance sync version', () async {
     final store = FakeCalendarStore(version: 4, failOnEntry: 'bad');
-    final service = CalendarSyncService(FakeFeed(version: 5), store);
+    final service = CalendarSyncService(FakeFeed(), store);
 
     await expectLater(service.sync(), throwsA(isA<FormatException>()));
 
@@ -14,7 +14,7 @@ void main() {
   });
 
   test('successful page advances to highest processed entry version', () async {
-    final feed = FakeFeed(version: 99);
+    final feed = FakeFeed();
     final store = FakeCalendarStore(version: 4);
     final service = CalendarSyncService(feed, store);
 
@@ -26,7 +26,7 @@ void main() {
   });
 
   test('empty page does not advance sync version', () async {
-    final feed = FakeFeed(version: 99, entries: []);
+    final feed = FakeFeed(entries: []);
     final store = FakeCalendarStore(version: 4);
     final service = CalendarSyncService(feed, store);
 
@@ -39,7 +39,7 @@ void main() {
 }
 
 class FakeFeed implements CalendarFeed {
-  FakeFeed({required this.version, List<FakeCalendarEntry>? entries})
+  FakeFeed({List<FakeCalendarEntry>? entries})
     : entries =
           entries ??
           [
@@ -47,14 +47,13 @@ class FakeFeed implements CalendarFeed {
             FakeCalendarEntry('bad', version: 6),
           ];
 
-  final int version;
   final List<FakeCalendarEntry> entries;
   int? afterVersion;
 
   @override
   Future<CalendarChangePage> changesAfter(int version) async {
     afterVersion = version;
-    return CalendarChangePage(version: this.version, entries: entries);
+    return CalendarChangePage(entries: entries);
   }
 }
 

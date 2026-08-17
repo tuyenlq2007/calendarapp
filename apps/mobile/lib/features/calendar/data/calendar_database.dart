@@ -21,8 +21,7 @@ abstract interface class CalendarFeedEntry {
 }
 
 class CalendarChangePage {
-  const CalendarChangePage({required this.version, required this.entries});
+  const CalendarChangePage({required this.entries});
 
-  final int version;
   final List<CalendarFeedEntry> entries;
 }
