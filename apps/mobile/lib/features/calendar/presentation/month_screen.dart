@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../domain/calendar_entry.dart';
 
 class MonthScreen extends StatelessWidget {
@@ -9,6 +10,8 @@ class MonthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return CustomScrollView(
       key: const ValueKey('month-scroll'),
       slivers: [
@@ -17,10 +20,10 @@ class MonthScreen extends StatelessWidget {
           backgroundColor: const Color(0xFF9B0F2E),
           foregroundColor: Colors.white,
           title: Text(month.title),
-          actions: const [
+          actions: [
             Padding(
-              padding: EdgeInsets.only(right: 16),
-              child: Center(child: Text('Today')),
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(child: Text(localizations.today)),
             ),
           ],
         ),

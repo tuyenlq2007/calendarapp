@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../calendar/domain/calendar_entry.dart';
 
 class TodayScreen extends StatelessWidget {
@@ -9,6 +10,8 @@ class TodayScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context)!;
+
     return CustomScrollView(
       key: const ValueKey('today-scroll'),
       slivers: [
@@ -17,10 +20,10 @@ class TodayScreen extends StatelessWidget {
           backgroundColor: const Color(0xFF9B0F2E),
           foregroundColor: Colors.white,
           title: const Text('February 2021'),
-          actions: const [
+          actions: [
             Padding(
-              padding: EdgeInsets.only(right: 16),
-              child: Center(child: Text('Today')),
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(child: Text(localizations.today)),
             ),
           ],
         ),
