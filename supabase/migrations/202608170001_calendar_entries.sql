@@ -43,27 +43,37 @@ create or replace function public.prepare_calendar_entry_change()
 returns trigger
 language plpgsql
 as $$
+declare
+  old_is_public boolean := false;
+  new_is_public boolean := false;
+  public_fields_changed boolean := false;
 begin
   if new.status = 'published' and new.published_at is null then
     new.published_at = now();
   end if;
 
+  new_is_public := new.status = 'published'
+    or (new.status = 'archived' and new.published_at is not null);
+
   if tg_op = 'INSERT' then
+    if new_is_public then
+      -- Serialize public feed versions so cursor order follows commit order.
+      perform pg_advisory_xact_lock(20260817, 1);
+      new.version = nextval(pg_get_serial_sequence('public.calendar_entries', 'version')::regclass);
+    end if;
+
     return new;
   end if;
 
-  if (
-    old.status = 'published'
-    or (old.status = 'archived' and old.published_at is not null)
-  ) and not (
-    new.status = 'published'
-    or (new.status = 'archived' and new.published_at is not null)
-  ) then
+  old_is_public := old.status = 'published'
+    or (old.status = 'archived' and old.published_at is not null);
+
+  if old_is_public and not new_is_public then
     raise exception 'published calendar entries must be archived before leaving the public feed'
       using errcode = '23514';
   end if;
 
-  if row(
+  public_fields_changed := row(
     new.gregorian_date,
     new.tibetan_date_text,
     new.title_en,
@@ -81,7 +91,11 @@ begin
     old.description_bo,
     old.status,
     old.published_at
-  ) then
+  );
+
+  if public_fields_changed and (old_is_public or new_is_public) then
+    -- Serialize public feed versions so cursor order follows commit order.
+    perform pg_advisory_xact_lock(20260817, 1);
     new.version = nextval(pg_get_serial_sequence('public.calendar_entries', 'version')::regclass);
     new.updated_at = now();
   end if;
