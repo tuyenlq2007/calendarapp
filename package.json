@@ -1,0 +1,12 @@
+{
+  "name": "barom-kagyu-calendar",
+  "private": true,
+  "workspaces": [
+    "apps/admin",
+    "packages/contracts"
+  ],
+  "scripts": {
+    "test:admin": "npm --workspace apps/admin test",
+    "lint:admin": "npm --workspace apps/admin run lint"
+  }
+}
