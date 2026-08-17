@@ -20,18 +20,25 @@ class BaromKagyuCalendarApp extends StatelessWidget {
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      localeResolutionCallback: (locale, supportedLocales) {
-        if (locale == null) return const Locale('en');
-        for (final supportedLocale in supportedLocales) {
-          if (supportedLocale.languageCode == locale.languageCode) {
-            return supportedLocale;
-          }
-        }
-        return const Locale('en');
-      },
+      localeListResolutionCallback: resolveBaromKagyuLocale,
       home: const CalendarHomeScreen(),
     );
   }
+}
+
+Locale resolveBaromKagyuLocale(
+  List<Locale>? preferredLocales,
+  Iterable<Locale> supportedLocales,
+) {
+  for (final preferredLocale in preferredLocales ?? const <Locale>[]) {
+    for (final supportedLocale in supportedLocales) {
+      if (supportedLocale.languageCode == preferredLocale.languageCode) {
+        return supportedLocale;
+      }
+    }
+  }
+
+  return const Locale('en');
 }
 
 class CalendarHomeScreen extends StatefulWidget {
@@ -46,7 +53,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
+    final localizations = AppLocalizations.of(context);
     final screens = [
       TodayScreen(entry: sampleCalendarEntries.today),
       MonthScreen(month: sampleCalendarEntries),

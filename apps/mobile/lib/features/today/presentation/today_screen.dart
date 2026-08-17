@@ -10,7 +10,7 @@ class TodayScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context)!;
+    final localizations = AppLocalizations.of(context);
 
     return CustomScrollView(
       key: const ValueKey('today-scroll'),

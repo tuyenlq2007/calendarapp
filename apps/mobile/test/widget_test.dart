@@ -63,6 +63,15 @@ void main() {
     expect(find.text('Calendar'), findsOneWidget);
   });
 
+  test('locale resolution uses supported secondary platform locales', () {
+    final locale = resolveBaromKagyuLocale(
+      const [Locale('vi'), Locale('bo')],
+      const [Locale('en'), Locale('bo')],
+    );
+
+    expect(locale, const Locale('bo'));
+  });
+
   testWidgets('Tibetan locale localizes navigation labels', (
     WidgetTester tester,
   ) async {
