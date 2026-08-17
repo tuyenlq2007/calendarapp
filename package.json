@@ -6,6 +6,7 @@
     "packages/contracts"
   ],
   "scripts": {
+    "test:contracts": "npm --workspace packages/contracts test",
     "test:admin": "npm --workspace apps/admin test",
     "lint:admin": "npm --workspace apps/admin run lint"
   }
