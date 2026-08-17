@@ -10,10 +10,11 @@ void main() {
     await expectLater(service.sync(), throwsA(isA<FormatException>()));
 
     expect(await store.currentVersion(), 4);
+    expect(store.upsertedEntries, isEmpty);
   });
 
-  test('successful page upserts entries and advances sync version', () async {
-    final feed = FakeFeed(version: 5);
+  test('successful page advances to highest processed entry version', () async {
+    final feed = FakeFeed(version: 99);
     final store = FakeCalendarStore(version: 4);
     final service = CalendarSyncService(feed, store);
 
@@ -21,23 +22,39 @@ void main() {
 
     expect(feed.afterVersion, 4);
     expect(store.upsertedEntries, ['good', 'bad']);
-    expect(await store.currentVersion(), 5);
+    expect(await store.currentVersion(), 6);
+  });
+
+  test('empty page does not advance sync version', () async {
+    final feed = FakeFeed(version: 99, entries: []);
+    final store = FakeCalendarStore(version: 4);
+    final service = CalendarSyncService(feed, store);
+
+    await service.sync();
+
+    expect(feed.afterVersion, 4);
+    expect(store.upsertedEntries, isEmpty);
+    expect(await store.currentVersion(), 4);
   });
 }
 
 class FakeFeed implements CalendarFeed {
-  FakeFeed({required this.version});
+  FakeFeed({required this.version, List<FakeCalendarEntry>? entries})
+    : entries =
+          entries ??
+          [
+            FakeCalendarEntry('good', version: 5),
+            FakeCalendarEntry('bad', version: 6),
+          ];
 
   final int version;
+  final List<FakeCalendarEntry> entries;
   int? afterVersion;
 
   @override
   Future<CalendarChangePage> changesAfter(int version) async {
     afterVersion = version;
-    return CalendarChangePage(
-      version: this.version,
-      entries: [FakeCalendarEntry('good'), FakeCalendarEntry('bad')],
-    );
+    return CalendarChangePage(version: this.version, entries: entries);
   }
 }
 
@@ -81,10 +98,13 @@ class FakeCalendarStore implements CalendarStore {
 }
 
 class FakeCalendarEntry implements CalendarFeedEntry {
-  FakeCalendarEntry(this.id);
+  FakeCalendarEntry(this.id, {required this.version});
 
   @override
   final String id;
+
+  @override
+  final int version;
 
   @override
   void validate() {}

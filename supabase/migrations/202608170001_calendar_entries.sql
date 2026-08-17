@@ -47,4 +47,4 @@ create policy "Anonymous users can read published calendar entries"
   on public.calendar_entries
   for select
   to anon
-  using (status = 'published');
+  using (status in ('published','archived'));

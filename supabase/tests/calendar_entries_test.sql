@@ -1,6 +1,6 @@
 begin;
 
-select plan(1);
+select plan(3);
 
 insert into public.calendar_entries (
   gregorian_date,
@@ -13,21 +13,48 @@ insert into public.calendar_entries (
 ) values
   (
     date '2026-08-17',
-    'བོད་ཟླ་༧ ཚེས་༥',
+    'bo date draft',
     'Draft practice day',
-    'སྒྲུབ་པའི་ཉིན།',
+    'bo draft',
     'Internal draft',
-    'ནང་ཁུལ་ཟིན་བྲིས།',
+    'bo description draft',
     'draft'
   ),
   (
     date '2026-08-18',
-    'བོད་ཟླ་༧ ཚེས་༦',
+    'bo date review',
+    'Review practice day',
+    'bo review',
+    'Internal review',
+    'bo description review',
+    'review'
+  ),
+  (
+    date '2026-08-19',
+    'bo date scheduled',
+    'Scheduled practice day',
+    'bo scheduled',
+    'Internal scheduled',
+    'bo description scheduled',
+    'scheduled'
+  ),
+  (
+    date '2026-08-20',
+    'bo date published',
     'Published practice day',
-    'སྒྲུབ་པའི་ཉིན་སྤེལ་ཟིན།',
+    'bo published',
     'Published entry',
-    'སྤེལ་ཟིན་པ།',
+    'bo description published',
     'published'
+  ),
+  (
+    date '2026-08-21',
+    'bo date archived',
+    'Archived practice day',
+    'bo archived',
+    'Archived entry',
+    'bo description archived',
+    'archived'
   );
 
 set local role anon;
@@ -36,10 +63,30 @@ select is(
   (
     select count(*)::integer
     from public.calendar_entries
-    where status <> 'published'
+    where status in ('draft','review','scheduled')
   ),
   0,
-  'anonymous users cannot read non-published calendar entries'
+  'anonymous users cannot read draft, review, or scheduled calendar entries'
+);
+
+select isnt(
+  (
+    select count(*)::integer
+    from public.calendar_changes(0)
+    where status = 'archived'
+  ),
+  0,
+  'anonymous users can read archived tombstones from the public feed'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.calendar_changes(0)
+    where status in ('draft','review','scheduled')
+  ),
+  0,
+  'anonymous users cannot read draft, review, or scheduled rows from the public feed'
 );
 
 reset role;

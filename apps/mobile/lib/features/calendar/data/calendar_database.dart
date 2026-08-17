@@ -15,6 +15,8 @@ abstract interface class CalendarStore {
 abstract interface class CalendarFeedEntry {
   String get id;
 
+  int get version;
+
   void validate();
 }
 
