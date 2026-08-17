@@ -1,0 +1,13 @@
+{
+  "@@locale": "bo",
+  "today": "དེ་རིང་།",
+  "calendar": "ལོ་ཐོ།",
+  "lastUpdated": "ཐ་མའི་གསར་སྒྱུར། {date}",
+  "@lastUpdated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
+}

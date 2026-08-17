@@ -1,0 +1,13 @@
+{
+  "@@locale": "en",
+  "today": "Today",
+  "calendar": "Calendar",
+  "lastUpdated": "Last updated: {date}",
+  "@lastUpdated": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
+}

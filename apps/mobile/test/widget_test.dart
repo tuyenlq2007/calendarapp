@@ -15,7 +15,7 @@ void main() {
     expect(find.text('བོད་ཟླ ༡༠ ཚེས ༡༠'), findsOneWidget);
     expect(find.textContaining('Bad day for hanging prayer flags'), findsOneWidget);
     expect(find.text('Today'), findsWidgets);
-    expect(find.text('Month'), findsOneWidget);
+    expect(find.text('Calendar'), findsOneWidget);
   });
 
   testWidgets('month tab shows a seven column calendar grid with practice days', (
@@ -23,7 +23,7 @@ void main() {
   ) async {
     await tester.pumpWidget(const BaromKagyuCalendarApp());
 
-    await tester.tap(find.text('Month'));
+    await tester.tap(find.text('Calendar'));
     await tester.pumpAndSettle();
 
     expect(find.text('Mon'), findsOneWidget);
