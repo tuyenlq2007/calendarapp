@@ -77,4 +77,20 @@ void main() {
     expect(find.text('སྒྲུབ་པ།'), findsOneWidget);
     expect(find.text('དེ་ལས་མང་བ།'), findsOneWidget);
   });
+
+  testWidgets('all navigation destinations have matching screens', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const BaromKagyuCalendarApp());
+
+    await tester.tap(find.text('Practice'));
+    await tester.pumpAndSettle();
+    expect(find.text('Practice'), findsWidgets);
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
+    expect(find.text('More'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
 }

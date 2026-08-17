@@ -50,6 +50,8 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     final screens = [
       TodayScreen(entry: sampleCalendarEntries.today),
       MonthScreen(month: sampleCalendarEntries),
+      _SectionScreen(title: localizations.practice),
+      _SectionScreen(title: localizations.more),
     ];
 
     return Scaffold(
@@ -80,6 +82,22 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
             label: localizations.more,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SectionScreen extends StatelessWidget {
+  const _SectionScreen({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Text(title, style: Theme.of(context).textTheme.headlineMedium),
       ),
     );
   }
