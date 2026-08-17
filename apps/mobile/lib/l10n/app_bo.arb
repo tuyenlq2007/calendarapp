@@ -1,12 +1,28 @@
 {
   "@@locale": "bo",
   "today": "དེ་རིང་།",
+  "@today": {
+    "description": "Bottom navigation label for the current-day screen."
+  },
   "calendar": "ལོ་ཐོ།",
+  "@calendar": {
+    "description": "Bottom navigation label for the month calendar screen."
+  },
+  "practice": "སྒྲུབ་པ།",
+  "@practice": {
+    "description": "Bottom navigation label for practice content."
+  },
+  "more": "དེ་ལས་མང་བ།",
+  "@more": {
+    "description": "Bottom navigation label for settings and additional sections."
+  },
   "lastUpdated": "ཐ་མའི་གསར་སྒྱུར། {date}",
   "@lastUpdated": {
+    "description": "Status text showing when synchronized content was last updated.",
     "placeholders": {
       "date": {
-        "type": "String"
+        "type": "String",
+        "example": "2026-08-17"
       }
     }
   }

@@ -49,4 +49,32 @@ void main() {
     expect(find.text('Guru Rinpoche day'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('unsupported locales fall back to English navigation labels', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const BaromKagyuCalendarApp(
+        locale: Locale('vi'),
+      ),
+    );
+
+    expect(find.text('Today'), findsWidgets);
+    expect(find.text('Calendar'), findsOneWidget);
+  });
+
+  testWidgets('Tibetan locale localizes navigation labels', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      const BaromKagyuCalendarApp(
+        locale: Locale('bo'),
+      ),
+    );
+
+    expect(find.text('དེ་རིང་།'), findsWidgets);
+    expect(find.text('ལོ་ཐོ།'), findsOneWidget);
+    expect(find.text('སྒྲུབ་པ།'), findsOneWidget);
+    expect(find.text('དེ་ལས་མང་བ།'), findsOneWidget);
+  });
 }

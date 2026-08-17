@@ -15,6 +15,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendar => 'Calendar';
 
   @override
+  String get practice => 'Practice';
+
+  @override
+  String get more => 'More';
+
+  @override
   String lastUpdated(String date) {
     return 'Last updated: $date';
   }

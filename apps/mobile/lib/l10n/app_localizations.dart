@@ -95,19 +95,31 @@ abstract class AppLocalizations {
     Locale('en')
   ];
 
-  /// No description provided for @today.
+  /// Bottom navigation label for the current-day screen.
   ///
   /// In en, this message translates to:
   /// **'Today'**
   String get today;
 
-  /// No description provided for @calendar.
+  /// Bottom navigation label for the month calendar screen.
   ///
   /// In en, this message translates to:
   /// **'Calendar'**
   String get calendar;
 
-  /// No description provided for @lastUpdated.
+  /// Bottom navigation label for practice content.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice'**
+  String get practice;
+
+  /// Bottom navigation label for settings and additional sections.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// Status text showing when synchronized content was last updated.
   ///
   /// In en, this message translates to:
   /// **'Last updated: {date}'**

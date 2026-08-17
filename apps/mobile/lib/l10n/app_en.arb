@@ -1,12 +1,28 @@
 {
   "@@locale": "en",
   "today": "Today",
+  "@today": {
+    "description": "Bottom navigation label for the current-day screen."
+  },
   "calendar": "Calendar",
+  "@calendar": {
+    "description": "Bottom navigation label for the month calendar screen."
+  },
+  "practice": "Practice",
+  "@practice": {
+    "description": "Bottom navigation label for practice content."
+  },
+  "more": "More",
+  "@more": {
+    "description": "Bottom navigation label for settings and additional sections."
+  },
   "lastUpdated": "Last updated: {date}",
   "@lastUpdated": {
+    "description": "Status text showing when synchronized content was last updated.",
     "placeholders": {
       "date": {
-        "type": "String"
+        "type": "String",
+        "example": "2026-08-17"
       }
     }
   }

@@ -15,6 +15,12 @@ class AppLocalizationsBo extends AppLocalizations {
   String get calendar => 'ལོ་ཐོ།';
 
   @override
+  String get practice => 'སྒྲུབ་པ།';
+
+  @override
+  String get more => 'དེ་ལས་མང་བ།';
+
+  @override
   String lastUpdated(String date) {
     return 'ཐ་མའི་གསར་སྒྱུར། $date';
   }

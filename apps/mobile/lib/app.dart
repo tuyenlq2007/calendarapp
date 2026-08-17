@@ -7,7 +7,9 @@ import 'features/today/presentation/today_screen.dart';
 import 'l10n/app_localizations.dart';
 
 class BaromKagyuCalendarApp extends StatelessWidget {
-  const BaromKagyuCalendarApp({super.key});
+  const BaromKagyuCalendarApp({super.key, this.locale});
+
+  final Locale? locale;
 
   @override
   Widget build(BuildContext context) {
@@ -15,8 +17,18 @@ class BaromKagyuCalendarApp extends StatelessWidget {
       title: 'Barom Kagyu Calendar',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      localeResolutionCallback: (locale, supportedLocales) {
+        if (locale == null) return const Locale('en');
+        for (final supportedLocale in supportedLocales) {
+          if (supportedLocale.languageCode == locale.languageCode) {
+            return supportedLocale;
+          }
+        }
+        return const Locale('en');
+      },
       home: const CalendarHomeScreen(),
     );
   }
@@ -58,14 +70,14 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
             selectedIcon: const Icon(Icons.calendar_month),
             label: localizations.calendar,
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.spa_outlined),
-            selectedIcon: Icon(Icons.spa),
-            label: 'Practice',
+          NavigationDestination(
+            icon: const Icon(Icons.spa_outlined),
+            selectedIcon: const Icon(Icons.spa),
+            label: localizations.practice,
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.more_horiz),
-            label: 'More',
+          NavigationDestination(
+            icon: const Icon(Icons.more_horiz),
+            label: localizations.more,
           ),
         ],
       ),
