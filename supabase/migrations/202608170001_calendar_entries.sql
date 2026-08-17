@@ -39,11 +39,30 @@ create table public.calendar_entries (
   )
 );
 
-create or replace function public.bump_calendar_entry_version()
+create or replace function public.prepare_calendar_entry_change()
 returns trigger
 language plpgsql
 as $$
 begin
+  if new.status = 'published' and new.published_at is null then
+    new.published_at = now();
+  end if;
+
+  if tg_op = 'INSERT' then
+    return new;
+  end if;
+
+  if (
+    old.status = 'published'
+    or (old.status = 'archived' and old.published_at is not null)
+  ) and not (
+    new.status = 'published'
+    or (new.status = 'archived' and new.published_at is not null)
+  ) then
+    raise exception 'published calendar entries must be archived before leaving the public feed'
+      using errcode = '23514';
+  end if;
+
   if row(
     new.gregorian_date,
     new.tibetan_date_text,
@@ -71,10 +90,15 @@ begin
 end;
 $$;
 
-create trigger calendar_entries_bump_version
+create trigger calendar_entries_prepare_insert
+  before insert on public.calendar_entries
+  for each row
+  execute function public.prepare_calendar_entry_change();
+
+create trigger calendar_entries_prepare_update
   before update on public.calendar_entries
   for each row
-  execute function public.bump_calendar_entry_version();
+  execute function public.prepare_calendar_entry_change();
 
 alter table public.calendar_entries enable row level security;
 

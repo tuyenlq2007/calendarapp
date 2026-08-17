@@ -1,6 +1,6 @@
 begin;
 
-select plan(10);
+select plan(13);
 
 create temporary table calendar_test_versions (
   name text primary key,
@@ -118,6 +118,16 @@ with inserted as (
       'bo description unrelated target',
       'published',
       timestamptz '2026-08-26 00:00:00+00'
+    ),
+    (
+      date '2026-08-27',
+      'bo date auto stamp target',
+      'Published auto stamp target',
+      'bo auto stamp target',
+      'Published auto stamp target entry',
+      'bo description auto stamp target',
+      'published',
+      null
     )
   returning id, title_en, version
 )
@@ -128,7 +138,8 @@ where title_en in (
   'Published update target',
   'Published archive target',
   'Published no-op target',
-  'Published unrelated target'
+  'Published unrelated target',
+  'Published auto stamp target'
 );
 
 update public.calendar_entries
@@ -161,6 +172,39 @@ where id = (
   select id
   from calendar_test_versions
   where name = 'Published unrelated target'
+);
+
+select is(
+  (
+    select (published_at is not null)::integer
+    from public.calendar_entries
+    where id = (
+      select id
+      from calendar_test_versions
+      where name = 'Published auto stamp target'
+    )
+  ),
+  1,
+  'published rows without an explicit published_at are auto-stamped'
+);
+
+select throws_ok(
+  $$
+    update public.calendar_entries
+    set status = 'draft'
+    where title_en = 'Published practice day'
+  $$,
+  '23514',
+  null,
+  'published rows cannot leave the public feed without becoming archived tombstones'
+);
+
+update public.calendar_entries
+set status = 'archived'
+where id = (
+  select id
+  from calendar_test_versions
+  where name = 'Published auto stamp target'
 );
 
 select is(
@@ -302,6 +346,28 @@ select is(
   ),
   1,
   'archived public rows reappear as tombstones after an older cursor'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from public.calendar_changes(
+      (
+        select cursor_version
+        from calendar_test_versions
+        where name = 'Published auto stamp target'
+      )
+    )
+    where id = (
+      select id
+      from calendar_test_versions
+      where name = 'Published auto stamp target'
+    )
+      and status = 'archived'
+      and published_at is not null
+  ),
+  1,
+  'auto-stamped published rows remain visible as archived tombstones'
 );
 
 reset role;
