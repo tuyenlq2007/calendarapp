@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import Home from "./page";
 import LoginPage from "./login/page";
+import { CalendarForm } from "@/features/calendar/calendar-form";
 
 describe("admin landing page", () => {
   it("introduces the staff-authored calendar dashboard", () => {
@@ -29,5 +30,31 @@ describe("staff login page", () => {
     expect(markup).toContain('name="password"');
     expect(markup).toContain('name="next" value="/calendar"');
     expect(markup).toContain("not assigned to the calendar staff dashboard");
+  });
+});
+
+describe("calendar entry form", () => {
+  it("renders bilingual fields and workflow actions", () => {
+    const markup = renderToStaticMarkup(
+      CalendarForm({
+        entry: {
+          id: "entry",
+          gregorianDate: "2026-08-17",
+          tibetanDateText: "10th lunar day",
+          titleEn: "Practice",
+          titleBo: "དུས་ཆེན།",
+          descriptionEn: "Daily practice",
+          descriptionBo: "ཉིན་རེའི་ཉམས་ལེན།",
+          status: "draft",
+        },
+      }),
+    );
+
+    expect(markup).toContain('name="gregorianDate"');
+    expect(markup).toContain('name="tibetanDateText"');
+    expect(markup).toContain('name="titleEn"');
+    expect(markup).toContain('name="titleBo"');
+    expect(markup).toContain('value="draft"');
+    expect(markup).toContain('value="review"');
   });
 });
