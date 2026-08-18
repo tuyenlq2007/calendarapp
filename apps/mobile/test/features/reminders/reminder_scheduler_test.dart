@@ -151,18 +151,35 @@ void main() {
     expect(notifications.scheduled, isEmpty);
   });
 
-  test('schedule failures are reported after computing a deterministic plan', () async {
-    final notifications = FakeNotifications(failOnEntryId: 'holy-1');
+  test('schedule failures are aggregated after attempting the full plan', () async {
+    final notifications = FakeNotifications(failOnEntryIds: {'holy-1', 'teaching-1'});
     final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
 
     await expectLater(
-      scheduler.rebuild(entries, {
-        ReminderCategory.dailyPractice,
-        ReminderCategory.holyDays,
-      }),
+      scheduler.rebuild(
+        [
+          ...entries,
+          CalendarReminderEntry(
+            id: 'teaching-1',
+            title: 'Teaching',
+            body: 'New teaching',
+            scheduledAt: DateTime(2026, 2, 3, 7),
+            category: ReminderCategory.teachings,
+          ),
+        ],
+        {
+          ReminderCategory.dailyPractice,
+          ReminderCategory.holyDays,
+          ReminderCategory.teachings,
+        },
+      ),
       throwsA(
         isA<ReminderSchedulingException>()
-            .having((error) => error.entryId, 'entryId', 'holy-1')
+            .having(
+              (error) => error.failures.map((failure) => failure.entryId),
+              'failed entry ids',
+              ['holy-1', 'teaching-1'],
+            )
             .having(
               (error) => error.stackTrace.toString(),
               'stackTrace',
@@ -173,6 +190,26 @@ void main() {
 
     expect(notifications.cancelCount, 1);
     expect(notifications.scheduled.map((n) => n.entryId), ['practice-1']);
+  });
+
+  test('invalid scheduling policies fail fast in debug builds', () {
+    expect(
+      () => ReminderScheduler(
+        FakeNotifications(),
+        now: () => fixedNow,
+        maxPendingNotifications: -1,
+      ),
+      throwsA(isA<AssertionError>()),
+    );
+
+    expect(
+      () => ReminderScheduler(
+        FakeNotifications(),
+        now: () => fixedNow,
+        schedulingHorizon: const Duration(days: -1),
+      ),
+      throwsA(isA<AssertionError>()),
+    );
   });
 }
 
@@ -196,10 +233,11 @@ final entries = [
 ];
 
 class FakeNotifications implements NotificationsPort {
-  FakeNotifications({this.canSchedule = true, this.failOnEntryId});
+  FakeNotifications({this.canSchedule = true, Set<String>? failOnEntryIds})
+    : failOnEntryIds = failOnEntryIds ?? const {};
 
   final bool canSchedule;
-  final String? failOnEntryId;
+  final Set<String> failOnEntryIds;
   int cancelCount = 0;
   final scheduled = <CalendarNotification>[];
 
@@ -214,7 +252,7 @@ class FakeNotifications implements NotificationsPort {
 
   @override
   Future<void> schedule(CalendarNotification notification) async {
-    if (notification.entryId == failOnEntryId) {
+    if (failOnEntryIds.contains(notification.entryId)) {
       throw StateError('failed to schedule ${notification.entryId}');
     }
     scheduled.add(notification);

@@ -22,6 +22,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get more => 'More';
 
   @override
+  String get notificationSettings => 'Notifications';
+
+  @override
+  String get dailyPractice => 'Daily practice';
+
+  @override
+  String get holyDays => 'Holy days';
+
+  @override
+  String get calendarEvents => 'Calendar events';
+
+  @override
+  String get teachings => 'Teachings';
+
+  @override
+  String get news => 'News';
+
+  @override
   String lastUpdated(String date) {
     return 'Last updated: $date';
   }

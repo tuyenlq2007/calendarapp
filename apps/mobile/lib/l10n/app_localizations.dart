@@ -122,6 +122,42 @@ abstract class AppLocalizations {
   /// **'More'**
   String get more;
 
+  /// Title for notification settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notificationSettings;
+
+  /// Reminder category label for daily practice notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily practice'**
+  String get dailyPractice;
+
+  /// Reminder category label for holy day notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Holy days'**
+  String get holyDays;
+
+  /// Reminder category label for calendar event notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar events'**
+  String get calendarEvents;
+
+  /// Reminder category label for teaching notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachings'**
+  String get teachings;
+
+  /// Reminder category label for news notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'News'**
+  String get news;
+
   /// Status text showing when synchronized content was last updated.
   ///
   /// In en, this message translates to:

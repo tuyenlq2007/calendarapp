@@ -115,4 +115,30 @@ void main() {
     expect(find.text('Daily practice'), findsOneWidget);
     expect(find.text('Holy days'), findsOneWidget);
   });
+
+  testWidgets('notification category settings toggle values', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const BaromKagyuCalendarApp());
+
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
+
+    final dailyPracticeFinder = find.widgetWithText(
+      CheckboxListTile,
+      'Daily practice',
+    );
+    expect(
+      tester.widget<CheckboxListTile>(dailyPracticeFinder).value,
+      isTrue,
+    );
+
+    await tester.tap(dailyPracticeFinder);
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<CheckboxListTile>(dailyPracticeFinder).value,
+      isFalse,
+    );
+  });
 }

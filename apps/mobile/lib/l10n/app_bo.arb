@@ -16,6 +16,30 @@
   "@more": {
     "description": "Bottom navigation label for settings and additional sections."
   },
+  "notificationSettings": "བརྡ་ཐོ།",
+  "@notificationSettings": {
+    "description": "Title for notification settings."
+  },
+  "dailyPractice": "ཉིན་རེའི་སྒྲུབ་པ།",
+  "@dailyPractice": {
+    "description": "Reminder category label for daily practice notifications."
+  },
+  "holyDays": "དུས་ཆེན།",
+  "@holyDays": {
+    "description": "Reminder category label for holy day notifications."
+  },
+  "calendarEvents": "ལོ་ཐོའི་བྱེད་སྒོ།",
+  "@calendarEvents": {
+    "description": "Reminder category label for calendar event notifications."
+  },
+  "teachings": "ཆོས་ཁྲིད།",
+  "@teachings": {
+    "description": "Reminder category label for teaching notifications."
+  },
+  "news": "གསར་འགྱུར།",
+  "@news": {
+    "description": "Reminder category label for news notifications."
+  },
   "lastUpdated": "ཐ་མའི་གསར་སྒྱུར། {date}",
   "@lastUpdated": {
     "description": "Status text showing when synchronized content was last updated.",

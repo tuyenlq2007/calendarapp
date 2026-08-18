@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../reminders/domain/reminder_category.dart';
 
 class NotificationSettingsScreen extends StatelessWidget {
@@ -14,14 +15,16 @@ class NotificationSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
+      appBar: AppBar(title: Text(localizations.notificationSettings)),
       body: ListView(
         children: [
           for (final category in ReminderCategory.values)
             CheckboxListTile(
               value: enabled.contains(category),
-              title: Text(_labelFor(category)),
+              title: Text(_labelFor(localizations, category)),
               onChanged: (selected) {
                 final next = Set<ReminderCategory>.of(enabled);
                 if (selected ?? false) {
@@ -37,13 +40,13 @@ class NotificationSettingsScreen extends StatelessWidget {
     );
   }
 
-  String _labelFor(ReminderCategory category) {
+  String _labelFor(AppLocalizations localizations, ReminderCategory category) {
     return switch (category) {
-      ReminderCategory.dailyPractice => 'Daily practice',
-      ReminderCategory.holyDays => 'Holy days',
-      ReminderCategory.calendarEvents => 'Calendar events',
-      ReminderCategory.teachings => 'Teachings',
-      ReminderCategory.news => 'News',
+      ReminderCategory.dailyPractice => localizations.dailyPractice,
+      ReminderCategory.holyDays => localizations.holyDays,
+      ReminderCategory.calendarEvents => localizations.calendarEvents,
+      ReminderCategory.teachings => localizations.teachings,
+      ReminderCategory.news => localizations.news,
     };
   }
 }

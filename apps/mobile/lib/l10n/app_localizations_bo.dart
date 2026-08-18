@@ -22,6 +22,24 @@ class AppLocalizationsBo extends AppLocalizations {
   String get more => 'དེ་ལས་མང་བ།';
 
   @override
+  String get notificationSettings => 'བརྡ་ཐོ།';
+
+  @override
+  String get dailyPractice => 'ཉིན་རེའི་སྒྲུབ་པ།';
+
+  @override
+  String get holyDays => 'དུས་ཆེན།';
+
+  @override
+  String get calendarEvents => 'ལོ་ཐོའི་བྱེད་སྒོ།';
+
+  @override
+  String get teachings => 'ཆོས་ཁྲིད།';
+
+  @override
+  String get news => 'གསར་འགྱུར།';
+
+  @override
   String lastUpdated(String date) {
     return 'ཐ་མའི་གསར་སྒྱུར། $date';
   }

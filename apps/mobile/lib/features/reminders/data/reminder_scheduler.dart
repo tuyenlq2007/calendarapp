@@ -77,7 +77,29 @@ class CalendarNotification {
 }
 
 class ReminderSchedulingException implements Exception {
-  ReminderSchedulingException(this.entryId, this.cause, this.stackTrace);
+  ReminderSchedulingException(this.failures)
+    : assert(failures.isNotEmpty, 'failures must not be empty');
+
+  final List<ReminderScheduleFailure> failures;
+
+  String get entryId => failures.first.entryId;
+
+  Object get cause => failures.first.cause;
+
+  StackTrace get stackTrace => failures.first.stackTrace;
+
+  @override
+  String toString() {
+    return 'ReminderSchedulingException($failures)';
+  }
+}
+
+class ReminderScheduleFailure {
+  const ReminderScheduleFailure({
+    required this.entryId,
+    required this.cause,
+    required this.stackTrace,
+  });
 
   final String entryId;
   final Object cause;
@@ -85,7 +107,7 @@ class ReminderSchedulingException implements Exception {
 
   @override
   String toString() {
-    return 'ReminderSchedulingException($entryId, $cause)';
+    return 'ReminderScheduleFailure($entryId, $cause)';
   }
 }
 
@@ -95,7 +117,8 @@ class ReminderScheduler {
     required this.now,
     this.schedulingHorizon = const Duration(days: 90),
     this.maxPendingNotifications = 64,
-  });
+  }) : assert(!schedulingHorizon.isNegative, 'schedulingHorizon must not be negative'),
+       assert(maxPendingNotifications >= 0, 'maxPendingNotifications must not be negative');
 
   final NotificationsPort notifications;
   final DateTime Function() now;
@@ -127,16 +150,23 @@ class ReminderScheduler {
     await notifications.cancelCalendarNotifications();
     if (!await notifications.canScheduleNotifications()) return;
 
+    final failures = <ReminderScheduleFailure>[];
     for (final notification in pending) {
       try {
         await notifications.schedule(notification);
       } catch (error, stackTrace) {
-        throw ReminderSchedulingException(
-          notification.entryId,
-          error,
-          stackTrace,
+        failures.add(
+          ReminderScheduleFailure(
+            entryId: notification.entryId,
+            cause: error,
+            stackTrace: stackTrace,
+          ),
         );
       }
+    }
+
+    if (failures.isNotEmpty) {
+      throw ReminderSchedulingException(List.unmodifiable(failures));
     }
   }
 }

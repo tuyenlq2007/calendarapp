@@ -16,6 +16,30 @@
   "@more": {
     "description": "Bottom navigation label for settings and additional sections."
   },
+  "notificationSettings": "Notifications",
+  "@notificationSettings": {
+    "description": "Title for notification settings."
+  },
+  "dailyPractice": "Daily practice",
+  "@dailyPractice": {
+    "description": "Reminder category label for daily practice notifications."
+  },
+  "holyDays": "Holy days",
+  "@holyDays": {
+    "description": "Reminder category label for holy day notifications."
+  },
+  "calendarEvents": "Calendar events",
+  "@calendarEvents": {
+    "description": "Reminder category label for calendar event notifications."
+  },
+  "teachings": "Teachings",
+  "@teachings": {
+    "description": "Reminder category label for teaching notifications."
+  },
+  "news": "News",
+  "@news": {
+    "description": "Reminder category label for news notifications."
+  },
   "lastUpdated": "Last updated: {date}",
   "@lastUpdated": {
     "description": "Status text showing when synchronized content was last updated.",
