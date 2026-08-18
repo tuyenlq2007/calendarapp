@@ -30,11 +30,14 @@ Future<void> main() async {
   runApp(
     BaromKagyuCalendarApp(
       calendarStore: store.publishedEntries,
+      initialLastSyncedAt: await store.lastSyncedAt(),
       syncCalendar: syncService == null
           ? null
           : () async {
               await syncService!.sync();
-              return DateTime.now();
+              final lastSyncedAt = DateTime.now();
+              await store.setLastSyncedAt(lastSyncedAt);
+              return lastSyncedAt;
             },
     ),
   );

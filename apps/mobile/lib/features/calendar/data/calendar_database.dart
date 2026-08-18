@@ -107,7 +107,7 @@ class CalendarFeedRow implements CalendarFeedEntry {
   static int _integer(Map<String, Object?> json, String key) {
     final value = json[key];
     if (value is int) return value;
-    if (value is num) return value.toInt();
+    if (value is num && value == value.toInt()) return value.toInt();
     throw FormatException('calendar feed row field $key must be an integer');
   }
 }

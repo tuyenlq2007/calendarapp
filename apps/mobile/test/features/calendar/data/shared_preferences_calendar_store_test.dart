@@ -46,6 +46,17 @@ void main() {
       expect(await store.currentVersion(), 3);
     },
   );
+
+  test('persists the last successful sync timestamp', () async {
+    final preferences = SharedPreferencesAsync();
+    final store = SharedPreferencesCalendarStore(preferences);
+    final lastSyncedAt = DateTime.utc(2026, 8, 17, 9, 30);
+
+    await store.setLastSyncedAt(lastSyncedAt);
+
+    final restartedStore = SharedPreferencesCalendarStore(preferences);
+    expect(await restartedStore.lastSyncedAt(), lastSyncedAt);
+  });
 }
 
 CalendarFeedRow row(String id, {required String status}) {

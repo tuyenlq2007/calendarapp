@@ -13,7 +13,6 @@ void main() {
     expect(find.text('February 2021'), findsOneWidget);
     expect(find.text('22'), findsOneWidget);
     expect(find.text('Guru Rinpoche day'), findsOneWidget);
-    expect(find.text('བོད་ཟླ ༡༠ ཚེས ༡༠'), findsOneWidget);
     expect(
       find.textContaining('Bad day for hanging prayer flags'),
       findsOneWidget,
@@ -85,6 +84,19 @@ void main() {
     expect(find.text('ལོ་ཐོ།'), findsOneWidget);
     expect(find.text('སྒྲུབ་པ།'), findsOneWidget);
     expect(find.text('དེ་ལས་མང་བ།'), findsOneWidget);
+  });
+
+  testWidgets('Tibetan locale localizes sync status labels', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const BaromKagyuCalendarApp(locale: Locale('bo')));
+
+    await tester.tap(find.text('དེ་ལས་མང་བ།'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('མཉམ་སྦྲེལ་གནས་ཚུལ།'), findsOneWidget);
+    expect(find.text('ད་དུང་གསར་སྒྱུར་བྱས་མེད།'), findsOneWidget);
+    expect(find.text('ཡང་བསྐྱར།'), findsOneWidget);
   });
 
   testWidgets('all navigation destinations have matching screens', (

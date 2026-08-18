@@ -9,6 +9,7 @@ class SharedPreferencesCalendarStore implements CalendarStore {
 
   static const _versionKey = 'calendar.sync.version';
   static const _entriesKey = 'calendar.sync.entries';
+  static const _lastSyncedAtKey = 'calendar.sync.last_synced_at';
 
   final SharedPreferencesAsync preferences;
 
@@ -50,16 +51,33 @@ class SharedPreferencesCalendarStore implements CalendarStore {
   Future<List<CalendarFeedRow>> publishedEntries() async {
     final entries = await _readEntries();
     final rows = entries.values.toList()
-      ..sort((left, right) => left.gregorianDate.compareTo(right.gregorianDate));
+      ..sort(
+        (left, right) => left.gregorianDate.compareTo(right.gregorianDate),
+      );
     return rows;
   }
 
+  Future<DateTime?> lastSyncedAt() async {
+    final encoded = await preferences.getString(_lastSyncedAtKey);
+    if (encoded == null) return null;
+    return DateTime.tryParse(encoded);
+  }
+
+  Future<void> setLastSyncedAt(DateTime lastSyncedAt) async {
+    await preferences.setString(
+      _lastSyncedAtKey,
+      lastSyncedAt.toIso8601String(),
+    );
+  }
+
   Future<Map<String, CalendarFeedRow>> _readEntries() async {
-    final encodedRows = await preferences.getStringList(_entriesKey) ?? const [];
+    final encodedRows =
+        await preferences.getStringList(_entriesKey) ?? const [];
     final entries = <String, CalendarFeedRow>{};
     for (final encodedRow in encodedRows) {
       final row = CalendarFeedRow.fromJson(
-        (jsonDecode(encodedRow) as Map<String, dynamic>).cast<String, Object?>(),
+        (jsonDecode(encodedRow) as Map<String, dynamic>)
+            .cast<String, Object?>(),
       );
       entries[row.id] = row;
     }
@@ -67,22 +85,22 @@ class SharedPreferencesCalendarStore implements CalendarStore {
   }
 
   Future<void> _writeEntries(Map<String, CalendarFeedRow> entries) async {
-    await preferences.setStringList(
-      _entriesKey,
-      [
-        for (final row in entries.values)
-          jsonEncode({
-            'id': row.id,
-            'version': row.version,
-            'gregorian_date': row.gregorianDate.toIso8601String().split('T').first,
-            'tibetan_date_text': row.tibetanDateText,
-            'title_en': row.titleEn,
-            'title_bo': row.titleBo,
-            'description_en': row.descriptionEn,
-            'description_bo': row.descriptionBo,
-            'status': row.status,
-          }),
-      ],
-    );
+    await preferences.setStringList(_entriesKey, [
+      for (final row in entries.values)
+        jsonEncode({
+          'id': row.id,
+          'version': row.version,
+          'gregorian_date': row.gregorianDate
+              .toIso8601String()
+              .split('T')
+              .first,
+          'tibetan_date_text': row.tibetanDateText,
+          'title_en': row.titleEn,
+          'title_bo': row.titleBo,
+          'description_en': row.descriptionEn,
+          'description_bo': row.descriptionBo,
+          'status': row.status,
+        }),
+    ]);
   }
 }

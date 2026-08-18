@@ -45,21 +45,17 @@ class AppLocalizationsBo extends AppLocalizations {
   }
 
   @override
-  String get syncStatus =>
-      'à½˜à½‰à½˜à¼‹à½¦à¾¦à¾²à½ºà½£à¼‹à½‚à½“à½¦à¼‹à½šà½´à½£à¼';
+  String get syncStatus => 'མཉམ་སྦྲེལ་གནས་ཚུལ།';
 
   @override
-  String get notUpdatedYet =>
-      'à½‘à¼‹à½‘à½´à½„à¼‹à½‚à½¦à½¢à¼‹à½¦à¾’à¾±à½´à½¢à¼‹à½–à¾±à½¦à¼‹à½˜à½ºà½‘à¼';
+  String get notUpdatedYet => 'ད་དུང་གསར་སྒྱུར་བྱས་མེད།';
 
   @override
-  String get retry => 'à½¡à½„à¼‹à½–à½¦à¾à¾±à½¢à¼';
+  String get retry => 'ཡང་བསྐྱར།';
 
   @override
-  String get syncing =>
-      'à½˜à½‰à½˜à¼‹à½¦à¾¦à¾²à½ºà½£à¼‹à½–à¾±à½ºà½‘à¼‹à½–à½žà½²à½“à¼';
+  String get syncing => 'མཉམ་སྦྲེལ་བྱེད་བཞིན།';
 
   @override
-  String get syncFailed =>
-      'à½˜à½‰à½˜à¼‹à½¦à¾¦à¾²à½ºà½£à¼‹à½˜à¼‹à½ à½‚à¾²à½´à½–à¼ à½£à½¼à¼‹à½à½¼à½ à½²à¼‹à½“à½„à¼‹à½‘à½¼à½“à¼‹à½¢à¾Ÿà½²à½„à¼‹à½”à¼‹à½‰à½¢à¼‹à½¡à½¼à½‘à¼';
+  String get syncFailed => 'མཉམ་སྦྲེལ་མ་འགྲུབ། ལོ་ཐོའི་ནང་དོན་རྙིང་པ་ཉར་ཡོད།';
 }

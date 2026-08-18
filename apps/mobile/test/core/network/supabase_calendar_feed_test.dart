@@ -75,6 +75,25 @@ void main() {
     expect(page.entries.single.validate, throwsFormatException);
   });
 
+  test('feed rows reject fractional versions', () {
+    expect(
+      () => CalendarChangePage.fromJsonRows([
+        {
+          'id': 'fractional-version',
+          'version': 1.9,
+          'gregorian_date': '2026-08-17',
+          'tibetan_date_text': '10th lunar day',
+          'title_en': 'Guru Rinpoche day',
+          'title_bo': 'Published Tibetan title',
+          'description_en': 'Practice day',
+          'description_bo': '',
+          'status': 'published',
+        },
+      ]),
+      throwsFormatException,
+    );
+  });
+
   test('supabase feed passes cursor version into row loader', () async {
     int? afterVersion;
     final feed = SupabaseCalendarFeed((version) async {
