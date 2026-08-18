@@ -32,6 +32,19 @@ class CalendarReminderEntry {
       category: category,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is CalendarReminderEntry &&
+        other.id == id &&
+        other.title == title &&
+        other.body == body &&
+        other.scheduledAt == scheduledAt &&
+        other.category == category;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, title, body, scheduledAt, category);
 }
 
 class CalendarNotification {
@@ -48,22 +61,67 @@ class CalendarNotification {
   final String body;
   final DateTime scheduledAt;
   final ReminderCategory category;
+
+  @override
+  bool operator ==(Object other) {
+    return other is CalendarNotification &&
+        other.entryId == entryId &&
+        other.title == title &&
+        other.body == body &&
+        other.scheduledAt == scheduledAt &&
+        other.category == category;
+  }
+
+  @override
+  int get hashCode => Object.hash(entryId, title, body, scheduledAt, category);
+}
+
+class ReminderSchedulingException implements Exception {
+  ReminderSchedulingException(this.entryId, this.cause);
+
+  final String entryId;
+  final Object cause;
+
+  @override
+  String toString() {
+    return 'ReminderSchedulingException($entryId, $cause)';
+  }
 }
 
 class ReminderScheduler {
-  ReminderScheduler(this.notifications);
+  ReminderScheduler(
+    this.notifications, {
+    required this.now,
+    this.schedulingHorizon = const Duration(days: 90),
+    this.maxPendingNotifications = 64,
+  });
 
   final NotificationsPort notifications;
+  final DateTime now;
+  final Duration schedulingHorizon;
+  final int maxPendingNotifications;
 
   Future<void> rebuild(
     List<CalendarReminderEntry> entries,
     Set<ReminderCategory> enabled,
   ) async {
-    await notifications.cancelCalendarNotifications();
+    final pending = entries
+        .where((entry) => enabled.contains(entry.category))
+        .where((entry) => entry.scheduledAt.isAfter(now))
+        .where((entry) => !entry.scheduledAt.isAfter(now.add(schedulingHorizon)))
+        .take(maxPendingNotifications)
+        .map((entry) => entry.toNotification())
+        .toList(growable: false);
+
     if (!await notifications.canScheduleNotifications()) return;
 
-    for (final entry in entries.where((entry) => enabled.contains(entry.category))) {
-      await notifications.schedule(entry.toNotification());
+    await notifications.cancelCalendarNotifications();
+    for (final notification in pending) {
+      try {
+        await notifications.schedule(notification);
+      } catch (error) {
+        throw ReminderSchedulingException(notification.entryId, error);
+      }
     }
   }
 }
