@@ -77,10 +77,11 @@ class CalendarNotification {
 }
 
 class ReminderSchedulingException implements Exception {
-  ReminderSchedulingException(this.entryId, this.cause);
+  ReminderSchedulingException(this.entryId, this.cause, this.stackTrace);
 
   final String entryId;
   final Object cause;
+  final StackTrace stackTrace;
 
   @override
   String toString() {
@@ -97,7 +98,7 @@ class ReminderScheduler {
   });
 
   final NotificationsPort notifications;
-  final DateTime now;
+  final DateTime Function() now;
   final Duration schedulingHorizon;
   final int maxPendingNotifications;
 
@@ -105,22 +106,36 @@ class ReminderScheduler {
     List<CalendarReminderEntry> entries,
     Set<ReminderCategory> enabled,
   ) async {
-    final pending = entries
+    final cutoff = now();
+    final horizonEnd = cutoff.add(schedulingHorizon);
+    final eligible = entries
         .where((entry) => enabled.contains(entry.category))
-        .where((entry) => entry.scheduledAt.isAfter(now))
-        .where((entry) => !entry.scheduledAt.isAfter(now.add(schedulingHorizon)))
+        .where((entry) => entry.scheduledAt.isAfter(cutoff))
+        .where((entry) => !entry.scheduledAt.isAfter(horizonEnd))
+        .toList()
+      ..sort((left, right) {
+        final timeComparison = left.scheduledAt.compareTo(right.scheduledAt);
+        if (timeComparison != 0) return timeComparison;
+        return left.id.compareTo(right.id);
+      });
+
+    final pending = eligible
         .take(maxPendingNotifications)
         .map((entry) => entry.toNotification())
         .toList(growable: false);
 
+    await notifications.cancelCalendarNotifications();
     if (!await notifications.canScheduleNotifications()) return;
 
-    await notifications.cancelCalendarNotifications();
     for (final notification in pending) {
       try {
         await notifications.schedule(notification);
-      } catch (error) {
-        throw ReminderSchedulingException(notification.entryId, error);
+      } catch (error, stackTrace) {
+        throw ReminderSchedulingException(
+          notification.entryId,
+          error,
+          stackTrace,
+        );
       }
     }
   }

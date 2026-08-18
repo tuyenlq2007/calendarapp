@@ -5,7 +5,7 @@ import 'package:mobile/features/reminders/domain/reminder_category.dart';
 void main() {
   test('holy-day preference schedules only holy-day entries', () async {
     final notifications = FakeNotifications();
-    final scheduler = ReminderScheduler(notifications, now: fixedNow);
+    final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
 
     await scheduler.rebuild(entries, {ReminderCategory.holyDays});
 
@@ -14,17 +14,17 @@ void main() {
 
   test('permission denial cancels existing notifications without error', () async {
     final notifications = FakeNotifications(canSchedule: false);
-    final scheduler = ReminderScheduler(notifications, now: fixedNow);
+    final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
 
     await scheduler.rebuild(entries, {ReminderCategory.holyDays});
 
-    expect(notifications.cancelCount, 0);
+    expect(notifications.cancelCount, 1);
     expect(notifications.scheduled, isEmpty);
   });
 
   test('time-zone rebuild cancels stale notifications before rescheduling', () async {
     final notifications = FakeNotifications();
-    final scheduler = ReminderScheduler(notifications, now: fixedNow);
+    final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
 
     await scheduler.rebuild(entries, {
       ReminderCategory.dailyPractice,
@@ -53,7 +53,7 @@ void main() {
     final notifications = FakeNotifications();
     final scheduler = ReminderScheduler(
       notifications,
-      now: fixedNow,
+      now: () => fixedNow,
       schedulingHorizon: const Duration(days: 30),
     );
 
@@ -85,7 +85,7 @@ void main() {
     final notifications = FakeNotifications();
     final scheduler = ReminderScheduler(
       notifications,
-      now: fixedNow,
+      now: () => fixedNow,
       maxPendingNotifications: 1,
     );
 
@@ -97,16 +97,78 @@ void main() {
     expect(notifications.scheduled.map((n) => n.entryId), ['practice-1']);
   });
 
+  test('pending notification cap keeps the earliest reminders first', () async {
+    final notifications = FakeNotifications();
+    final scheduler = ReminderScheduler(
+      notifications,
+      now: () => fixedNow,
+      maxPendingNotifications: 2,
+    );
+
+    await scheduler.rebuild(
+      [
+        CalendarReminderEntry(
+          id: 'later',
+          title: 'Later',
+          body: 'Later reminder',
+          scheduledAt: DateTime(2026, 2, 5, 7),
+          category: ReminderCategory.holyDays,
+        ),
+        CalendarReminderEntry(
+          id: 'same-time-b',
+          title: 'Same time B',
+          body: 'Same time reminder',
+          scheduledAt: DateTime(2026, 2, 2, 7),
+          category: ReminderCategory.holyDays,
+        ),
+        CalendarReminderEntry(
+          id: 'same-time-a',
+          title: 'Same time A',
+          body: 'Same time reminder',
+          scheduledAt: DateTime(2026, 2, 2, 7),
+          category: ReminderCategory.holyDays,
+        ),
+      ],
+      {ReminderCategory.holyDays},
+    );
+
+    expect(notifications.scheduled.map((n) => n.entryId), [
+      'same-time-a',
+      'same-time-b',
+    ]);
+  });
+
+  test('reused scheduler evaluates the clock at rebuild time', () async {
+    var now = DateTime(2026, 2, 1, 6);
+    final notifications = FakeNotifications();
+    final scheduler = ReminderScheduler(notifications, now: () => now);
+
+    await scheduler.rebuild(entries, {ReminderCategory.dailyPractice});
+    expect(notifications.scheduled.map((n) => n.entryId), ['practice-1']);
+
+    now = DateTime(2026, 2, 1, 8);
+    await scheduler.rebuild(entries, {ReminderCategory.dailyPractice});
+    expect(notifications.scheduled, isEmpty);
+  });
+
   test('schedule failures are reported after computing a deterministic plan', () async {
     final notifications = FakeNotifications(failOnEntryId: 'holy-1');
-    final scheduler = ReminderScheduler(notifications, now: fixedNow);
+    final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
 
     await expectLater(
       scheduler.rebuild(entries, {
         ReminderCategory.dailyPractice,
         ReminderCategory.holyDays,
       }),
-      throwsA(isA<ReminderSchedulingException>()),
+      throwsA(
+        isA<ReminderSchedulingException>()
+            .having((error) => error.entryId, 'entryId', 'holy-1')
+            .having(
+              (error) => error.stackTrace.toString(),
+              'stackTrace',
+              contains('FakeNotifications.schedule'),
+            ),
+      ),
     );
 
     expect(notifications.cancelCount, 1);
