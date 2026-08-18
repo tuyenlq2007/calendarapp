@@ -3,11 +3,16 @@ import { saveCalendarDraft, type CalendarDraft } from "./calendar-actions";
 type CalendarFormProps = {
   entry: CalendarDraft;
   errorMessage?: string;
+  saveAction?: string | ((formData: FormData) => void | Promise<void>);
 };
 
-export function CalendarForm({ entry, errorMessage }: CalendarFormProps) {
+export function CalendarForm({
+  entry,
+  errorMessage,
+  saveAction = saveCalendarDraft,
+}: CalendarFormProps) {
   return (
-    <form action={saveCalendarDraft}>
+    <form action={saveAction}>
       {entry.id ? <input type="hidden" name="id" value={entry.id} /> : null}
       {errorMessage ? <p role="alert">{errorMessage}</p> : null}
       <label>

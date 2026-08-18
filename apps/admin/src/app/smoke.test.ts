@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import Home from "./page";
 import LoginPage from "./login/page";
+import { CalendarEntryTable } from "@/features/calendar/calendar-entry-table";
 import { CalendarForm } from "@/features/calendar/calendar-form";
 
 describe("admin landing page", () => {
@@ -56,5 +57,37 @@ describe("calendar entry form", () => {
     expect(markup).toContain('name="titleBo"');
     expect(markup).toContain('value="draft"');
     expect(markup).toContain('value="review"');
+  });
+
+  it("renders publish controls only for publishing roles", () => {
+    const entry = {
+      id: "entry",
+      gregorianDate: "2026-08-17",
+      tibetanDateText: "10th lunar day",
+      titleEn: "Practice",
+      titleBo: "དུས་ཆེན།",
+      descriptionEn: "Daily practice",
+      descriptionBo: "ཉིན་རེའི་ཉམས་ལེན།",
+      status: "review" as const,
+    };
+
+    const editorMarkup = renderToStaticMarkup(
+      CalendarEntryTable({
+        entries: [entry],
+        canPublish: false,
+        publishAction: "#publish",
+      }),
+    );
+    const reviewerMarkup = renderToStaticMarkup(
+      CalendarEntryTable({
+        entries: [entry],
+        canPublish: true,
+        publishAction: "#publish",
+      }),
+    );
+
+    expect(editorMarkup).toContain("No action");
+    expect(editorMarkup).not.toContain("Publish");
+    expect(reviewerMarkup).toContain("Publish");
   });
 });
