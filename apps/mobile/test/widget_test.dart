@@ -102,4 +102,17 @@ void main() {
     expect(find.text('More'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('more tab exposes notification category settings', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const BaromKagyuCalendarApp());
+
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Notifications'), findsOneWidget);
+    expect(find.text('Daily practice'), findsOneWidget);
+    expect(find.text('Holy days'), findsOneWidget);
+  });
 }

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
 import 'features/calendar/domain/calendar_entry.dart';
 import 'features/calendar/presentation/month_screen.dart';
+import 'features/reminders/domain/reminder_category.dart';
+import 'features/settings/presentation/notification_settings_screen.dart';
 import 'features/today/presentation/today_screen.dart';
 import 'l10n/app_localizations.dart';
 
@@ -50,6 +52,10 @@ class CalendarHomeScreen extends StatefulWidget {
 
 class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   int _selectedIndex = 0;
+  Set<ReminderCategory> _enabledReminderCategories = const {
+    ReminderCategory.dailyPractice,
+    ReminderCategory.holyDays,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +64,12 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
       TodayScreen(entry: sampleCalendarEntries.today),
       MonthScreen(month: sampleCalendarEntries),
       _SectionScreen(title: localizations.practice),
-      _SectionScreen(title: localizations.more),
+      NotificationSettingsScreen(
+        enabled: _enabledReminderCategories,
+        onChanged: (categories) {
+          setState(() => _enabledReminderCategories = categories);
+        },
+      ),
     ];
 
     return Scaffold(
