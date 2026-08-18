@@ -1,6 +1,6 @@
 begin;
 
-select plan(9);
+select plan(10);
 
 set local role authenticated;
 
@@ -117,18 +117,26 @@ select lives_ok(
   'editors can create draft entries'
 );
 
-select throws_ok(
+select lives_ok(
   $$
     update public.calendar_entries
     set status = 'published'
     where title_en = 'Reviewed entry'
   $$,
-  '42501',
-  null,
-  'editors cannot publish reviewed entries'
+  'editor publish attempt is policy-filtered without crashing'
 );
 
 reset role;
+
+select is(
+  (
+    select status::text
+    from public.calendar_entries
+    where title_en = 'Reviewed entry'
+  ),
+  'review',
+  'editors cannot publish reviewed entries'
+);
 
 select set_config(
   'request.jwt.claim.sub',

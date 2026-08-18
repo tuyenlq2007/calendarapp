@@ -41,4 +41,6 @@ coverage/
 test-results/
 playwright-report/
 *.log
+supabase/.branches/
+supabase/.temp/
 
