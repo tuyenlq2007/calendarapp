@@ -1,6 +1,6 @@
 begin;
 
-select plan(4);
+select plan(9);
 
 set local role authenticated;
 
@@ -40,10 +40,53 @@ insert into auth.users (
   '{}'::jsonb,
   now(),
   now()
+),
+(
+  '00000000-0000-0000-0000-000000000000',
+  '00000000-0000-0000-0000-000000000002',
+  'authenticated',
+  'authenticated',
+  'reviewer@example.test',
+  '',
+  now(),
+  '{}'::jsonb,
+  '{}'::jsonb,
+  now(),
+  now()
+),
+(
+  '00000000-0000-0000-0000-000000000000',
+  '00000000-0000-0000-0000-000000000003',
+  'authenticated',
+  'authenticated',
+  'administrator@example.test',
+  '',
+  now(),
+  '{}'::jsonb,
+  '{}'::jsonb,
+  now(),
+  now()
 );
 
 insert into public.staff_profiles (user_id, role)
-values ('00000000-0000-0000-0000-000000000001', 'editor');
+values
+  ('00000000-0000-0000-0000-000000000001', 'editor'),
+  ('00000000-0000-0000-0000-000000000002', 'reviewer'),
+  ('00000000-0000-0000-0000-000000000003', 'administrator');
+
+insert into public.calendar_entries (
+  gregorian_date,
+  tibetan_date_text,
+  title_en,
+  title_bo,
+  status
+) values (
+  date '2026-08-19',
+  'bo date reviewed',
+  'Reviewed entry',
+  'bo reviewed',
+  'review'
+);
 
 select set_config(
   'request.jwt.claim.sub',
@@ -56,12 +99,93 @@ select ok(not public.has_staff_role('reviewer'), 'editor role does not imply rev
 
 set local role authenticated;
 
+select is(
+  (
+    select count(*)::integer
+    from public.calendar_entries
+    where title_en = 'Reviewed entry'
+  ),
+  1,
+  'assigned staff can read protected calendar entries'
+);
+
 select lives_ok(
   $$
     insert into public.calendar_entries (gregorian_date, title_en, status)
     values (date '2026-08-18', 'Editor draft', 'draft')
   $$,
   'editors can create draft entries'
+);
+
+select throws_ok(
+  $$
+    update public.calendar_entries
+    set status = 'published'
+    where title_en = 'Reviewed entry'
+  $$,
+  '42501',
+  null,
+  'editors cannot publish reviewed entries'
+);
+
+reset role;
+
+select set_config(
+  'request.jwt.claim.sub',
+  '00000000-0000-0000-0000-000000000002',
+  true
+);
+
+set local role authenticated;
+
+select lives_ok(
+  $$
+    update public.calendar_entries
+    set status = 'published',
+      description_en = 'Reviewer approved',
+      description_bo = 'bo reviewer approved'
+    where title_en = 'Reviewed entry'
+  $$,
+  'reviewers can publish reviewed entries'
+);
+
+reset role;
+
+select set_config(
+  'request.jwt.claim.sub',
+  '00000000-0000-0000-0000-000000000003',
+  true
+);
+
+set local role authenticated;
+
+select lives_ok(
+  $$
+    update public.calendar_entries
+    set status = 'archived'
+    where title_en = 'Reviewed entry'
+  $$,
+  'administrators can manage published entries'
+);
+
+reset role;
+
+select set_config(
+  'request.jwt.claim.sub',
+  '00000000-0000-0000-0000-000000000099',
+  true
+);
+
+set local role authenticated;
+
+select is(
+  (
+    select count(*)::integer
+    from public.calendar_entries
+    where title_en = 'Reviewed entry'
+  ),
+  0,
+  'unassigned authenticated users cannot read protected calendar entries'
 );
 
 reset role;

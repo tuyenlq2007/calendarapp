@@ -45,7 +45,7 @@ $$;
 grant usage on type public.staff_role to authenticated;
 grant select on table public.staff_profiles to authenticated;
 grant execute on function public.has_staff_role(public.staff_role) to authenticated;
-grant insert, update on table public.calendar_entries to authenticated;
+grant select, insert, update on table public.calendar_entries to authenticated;
 
 create policy "Staff can read staff profiles"
   on public.staff_profiles
@@ -84,3 +84,23 @@ create policy "Editors can update draft calendar entries"
     public.has_staff_role('editor')
     and status in ('draft', 'review')
   );
+
+create policy "Reviewers can publish reviewed calendar entries"
+  on public.calendar_entries
+  for update
+  to authenticated
+  using (
+    public.has_staff_role('reviewer')
+    and status in ('review', 'scheduled')
+  )
+  with check (
+    public.has_staff_role('reviewer')
+    and status in ('review', 'scheduled', 'published')
+  );
+
+create policy "Administrators can manage calendar entries"
+  on public.calendar_entries
+  for update
+  to authenticated
+  using (public.has_staff_role('administrator'))
+  with check (public.has_staff_role('administrator'));
