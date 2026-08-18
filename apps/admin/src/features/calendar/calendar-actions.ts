@@ -10,6 +10,8 @@ export type CalendarStatus =
   | "published"
   | "archived";
 
+export type StaffRole = "editor" | "reviewer" | "administrator";
+
 export type CalendarDraft = {
   id?: string;
   gregorianDate: string;
@@ -24,6 +26,7 @@ export type CalendarDraft = {
 export type CalendarDraftInput = Omit<CalendarDraft, "status">;
 
 export type CalendarRepository = {
+  getStaffRole(): Promise<StaffRole | null>;
   saveDraft(input: CalendarDraftInput): Promise<{ id: string }>;
   transition(id: string, status: CalendarStatus): Promise<void>;
   listEntries(): Promise<CalendarDraft[]>;
@@ -42,7 +45,7 @@ export type SaveCalendarInput = CalendarDraftInput & {
 
 type ValidationFailure = {
   ok: false;
-  field: "titleEn" | "titleBo" | "tibetanDateText";
+  field: "titleEn" | "titleBo" | "tibetanDateText" | "authorization";
   message: string;
 };
 
@@ -50,6 +53,13 @@ type Success = {
   ok: true;
   id?: string;
 };
+
+export class CalendarMutationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CalendarMutationError";
+  }
+}
 
 function requiredEnvironment(name: string) {
   const value = process.env[name];
@@ -102,7 +112,28 @@ export async function publishEntry(
   const failure = validatePublication(input);
   if (failure) return failure;
 
-  await db.transition(input.id, "published");
+  const role = await db.getStaffRole();
+  if (role !== "reviewer" && role !== "administrator") {
+    return {
+      ok: false,
+      field: "authorization",
+      message: "Reviewer access is required to publish entries",
+    };
+  }
+
+  try {
+    await db.transition(input.id, "published");
+  } catch (error) {
+    if (error instanceof CalendarMutationError) {
+      return {
+        ok: false,
+        field: "authorization",
+        message: error.message,
+      };
+    }
+
+    throw error;
+  }
 
   return { ok: true };
 }
@@ -111,6 +142,16 @@ export async function saveCalendarEntry(
   db: CalendarRepository,
   input: SaveCalendarInput,
 ): Promise<Success | ValidationFailure> {
+  if (input.intent === "review") {
+    const failure = validatePublication({
+      id: input.id ?? "",
+      titleEn: input.titleEn,
+      titleBo: input.titleBo,
+      tibetanDateText: input.tibetanDateText,
+    });
+    if (failure) return failure;
+  }
+
   const saved = await db.saveDraft({
     id: input.id?.trim() || undefined,
     gregorianDate: input.gregorianDate,
@@ -122,14 +163,6 @@ export async function saveCalendarEntry(
   });
 
   if (input.intent === "review") {
-    const failure = validatePublication({
-      id: saved.id,
-      titleEn: input.titleEn,
-      titleBo: input.titleBo,
-      tibetanDateText: input.tibetanDateText,
-    });
-    if (failure) return failure;
-
     await db.transition(saved.id, "review");
   }
 
@@ -156,6 +189,23 @@ export async function createCalendarRepository(): Promise<CalendarRepository> {
   );
 
   return {
+    async getStaffRole() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from("staff_profiles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      return (data?.role as StaffRole | undefined) ?? null;
+    },
     async saveDraft(input) {
       const row = {
         gregorian_date: input.gregorianDate,
@@ -171,9 +221,15 @@ export async function createCalendarRepository(): Promise<CalendarRepository> {
         const { error } = await supabase
           .from("calendar_entries")
           .update(row)
-          .eq("id", input.id);
+          .eq("id", input.id)
+          .select("id")
+          .single();
 
-        if (error) throw error;
+        if (error) {
+          throw new CalendarMutationError(
+            "Calendar entry could not be updated by the current role",
+          );
+        }
 
         return { id: input.id };
       }
@@ -184,7 +240,11 @@ export async function createCalendarRepository(): Promise<CalendarRepository> {
         .select("id")
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw new CalendarMutationError(
+          "Calendar entry could not be created by the current role",
+        );
+      }
 
       return { id: data.id as string };
     },
@@ -192,9 +252,17 @@ export async function createCalendarRepository(): Promise<CalendarRepository> {
       const { error } = await supabase
         .from("calendar_entries")
         .update({ status })
-        .eq("id", id);
+        .eq("id", id)
+        .select("id")
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        throw new CalendarMutationError(
+          status === "published"
+            ? "Calendar entry could not be published by the current role"
+            : "Calendar entry could not be updated by the current role",
+        );
+      }
     },
     async listEntries() {
       const { data, error } = await supabase

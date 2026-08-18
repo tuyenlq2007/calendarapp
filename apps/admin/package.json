@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "vitest run src/features/calendar/calendar-workflow.e2e.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

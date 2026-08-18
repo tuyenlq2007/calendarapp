@@ -15,7 +15,9 @@ type CalendarPageProps = {
 export default async function CalendarPage({ searchParams }: CalendarPageProps) {
   const params = await searchParams;
   const db = await createCalendarRepository();
+  const staffRole = await db.getStaffRole();
   const entries = await db.listEntries();
+  const canPublish = staffRole === "reviewer" || staffRole === "administrator";
 
   return (
     <main className={styles.main}>
@@ -48,7 +50,8 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                   <td lang="bo">{entry.titleBo}</td>
                   <td>{entry.status}</td>
                   <td>
-                    {entry.status === "review" || entry.status === "scheduled" ? (
+                    {canPublish &&
+                    (entry.status === "review" || entry.status === "scheduled") ? (
                       <form action={publishCalendarEntry}>
                         <input type="hidden" name="id" value={entry.id} />
                         <input type="hidden" name="titleEn" value={entry.titleEn} />

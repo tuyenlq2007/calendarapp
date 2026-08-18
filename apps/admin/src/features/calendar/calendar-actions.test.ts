@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  CalendarMutationError,
   publishEntry,
   saveCalendarEntry,
   type CalendarRepository,
@@ -9,6 +10,7 @@ import {
 function repository(): CalendarRepository & {
   transitions: Array<{ id: string; status: string }>;
   saved: unknown[];
+  role: "editor" | "reviewer" | "administrator";
 } {
   const transitions: Array<{ id: string; status: string }> = [];
   const saved: unknown[] = [];
@@ -16,6 +18,10 @@ function repository(): CalendarRepository & {
   return {
     transitions,
     saved,
+    role: "reviewer",
+    async getStaffRole() {
+      return this.role;
+    },
     async saveDraft(input) {
       saved.push(input);
 
@@ -93,6 +99,63 @@ describe("calendar publishing actions", () => {
     expect(db.transitions).toEqual([{ id: "entry", status: "published" }]);
   });
 
+  it("does not let editors publish entries", async () => {
+    const db = repository();
+    db.role = "editor";
+
+    const result = await publishEntry(db, {
+      id: "entry",
+      titleEn: "Practice",
+      titleBo: "à½‘à½´à½¦à¼‹à½†à½ºà½“à¼",
+      tibetanDateText: "10th lunar day",
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      field: "authorization",
+      message: "Reviewer access is required to publish entries",
+    });
+    expect(db.transitions).toEqual([]);
+  });
+
+  it("does not report success when the repository denies publication", async () => {
+    const db = repository();
+    db.transition = async () => {
+      throw new CalendarMutationError(
+        "Calendar entry could not be published by the current role",
+      );
+    };
+
+    const result = await publishEntry(db, {
+      id: "entry",
+      titleEn: "Practice",
+      titleBo: "à½‘à½´à½¦à¼‹à½†à½ºà½“à¼",
+      tibetanDateText: "10th lunar day",
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      field: "authorization",
+      message: "Calendar entry could not be published by the current role",
+    });
+  });
+
+  it("surfaces unexpected publication failures", async () => {
+    const db = repository();
+    db.transition = async () => {
+      throw new Error("database unavailable");
+    };
+
+    await expect(
+      publishEntry(db, {
+        id: "entry",
+        titleEn: "Practice",
+        titleBo: "à½‘à½´à½¦à¼‹à½†à½ºà½“à¼",
+        tibetanDateText: "10th lunar day",
+      }),
+    ).rejects.toThrow("database unavailable");
+  });
+
   it("saves drafts and submits review through explicit workflow intents", async () => {
     const db = repository();
 
@@ -123,5 +186,28 @@ describe("calendar publishing actions", () => {
     ).resolves.toEqual({ ok: true, id: "new-entry" });
 
     expect(db.transitions).toEqual([{ id: "new-entry", status: "review" }]);
+  });
+
+  it("validates review submission before mutating drafts", async () => {
+    const db = repository();
+
+    const result = await saveCalendarEntry(db, {
+      id: "existing-entry",
+      gregorianDate: "2026-08-17",
+      tibetanDateText: "10th lunar day",
+      titleEn: "Practice",
+      titleBo: "",
+      descriptionEn: "Daily practice",
+      descriptionBo: "",
+      intent: "review",
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      field: "titleBo",
+      message: "Tibetan title is required",
+    });
+    expect(db.saved).toEqual([]);
+    expect(db.transitions).toEqual([]);
   });
 });
