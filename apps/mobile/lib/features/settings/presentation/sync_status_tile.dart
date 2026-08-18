@@ -12,7 +12,7 @@ class SyncStatusTile extends StatelessWidget {
   });
 
   final DateTime? lastUpdated;
-  final VoidCallback onRetry;
+  final VoidCallback? onRetry;
   final bool isSyncing;
 
   @override

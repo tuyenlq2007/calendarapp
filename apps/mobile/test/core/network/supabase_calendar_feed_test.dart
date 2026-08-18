@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile/core/network/supabase_calendar_feed.dart';
 import 'package:mobile/features/calendar/data/calendar_database.dart';
 
 void main() {
@@ -54,5 +55,60 @@ void main() {
     ]);
 
     expect(page.entries.single.validate, throwsFormatException);
+  });
+
+  test('feed rows require positive versions', () {
+    final page = CalendarChangePage.fromJsonRows([
+      {
+        'id': 'invalid-version',
+        'version': 0,
+        'gregorian_date': '2026-08-17',
+        'tibetan_date_text': '10th lunar day',
+        'title_en': 'Guru Rinpoche day',
+        'title_bo': 'Published Tibetan title',
+        'description_en': 'Practice day',
+        'description_bo': '',
+        'status': 'published',
+      },
+    ]);
+
+    expect(page.entries.single.validate, throwsFormatException);
+  });
+
+  test('supabase feed passes cursor version into row loader', () async {
+    int? afterVersion;
+    final feed = SupabaseCalendarFeed((version) async {
+      afterVersion = version;
+      return [
+        {
+          'id': 'published-entry',
+          'version': 7,
+          'gregorian_date': '2026-08-17',
+          'tibetan_date_text': '10th lunar day',
+          'title_en': 'Guru Rinpoche day',
+          'title_bo': 'དུས་ཆེན།',
+          'description_en': 'Practice day',
+          'description_bo': 'ཉམས་ལེན།',
+          'status': 'published',
+        },
+      ];
+    });
+
+    final page = await feed.changesAfter(4);
+
+    expect(afterVersion, 4);
+    expect(page.entries.single.id, 'published-entry');
+  });
+
+  test('supabase feed wraps rpc failures as network exceptions', () async {
+    final feed = SupabaseCalendarFeed((_) async => throw StateError('offline'));
+
+    await expectLater(feed.changesAfter(4), throwsA(isA<NetworkException>()));
+  });
+
+  test('supabase feed rejects non-object rows', () async {
+    final feed = SupabaseCalendarFeed((_) async => ['bad row']);
+
+    await expectLater(feed.changesAfter(4), throwsFormatException);
   });
 }

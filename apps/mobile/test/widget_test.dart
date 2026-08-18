@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mobile/app.dart';
+import 'package:mobile/features/calendar/data/calendar_database.dart';
 
 void main() {
   testWidgets('today screen shows bilingual Barom Kagyu calendar content', (
@@ -133,6 +134,46 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Last updated:'), findsOneWidget);
+  });
+
+  testWidgets('sync retry reloads published entries from the calendar store', (
+    WidgetTester tester,
+  ) async {
+    var rows = <CalendarFeedRow>[];
+
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        calendarStore: () async => rows,
+        syncCalendar: () async {
+          rows = [
+            CalendarFeedRow(
+              id: 'published-entry',
+              version: 2,
+              gregorianDate: DateTime(2026, 8, 17),
+              tibetanDateText: '10th lunar day',
+              titleEn: 'Published from Supabase',
+              titleBo: 'Published Tibetan title',
+              descriptionEn: 'Loaded after a successful sync.',
+              descriptionBo: '',
+              status: 'published',
+            ),
+          ];
+          return DateTime(2026, 8, 17, 9, 30);
+        },
+      ),
+    );
+
+    await tester.tap(find.text('More'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Today'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('August 2026'), findsOneWidget);
+    expect(find.text('Published from Supabase'), findsOneWidget);
   });
 
   testWidgets('failed sync keeps the existing sync status timestamp', (

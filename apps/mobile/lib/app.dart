@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
+import 'features/calendar/data/calendar_database.dart';
 import 'features/calendar/domain/calendar_entry.dart';
 import 'features/calendar/presentation/month_screen.dart';
 import 'features/reminders/domain/reminder_category.dart';
@@ -12,11 +13,13 @@ class BaromKagyuCalendarApp extends StatelessWidget {
   const BaromKagyuCalendarApp({
     super.key,
     this.locale,
+    this.calendarStore,
     this.syncCalendar,
     this.initialLastSyncedAt,
   });
 
   final Locale? locale;
+  final Future<List<CalendarFeedRow>> Function()? calendarStore;
   final Future<DateTime> Function()? syncCalendar;
   final DateTime? initialLastSyncedAt;
 
@@ -31,6 +34,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
       supportedLocales: AppLocalizations.supportedLocales,
       localeListResolutionCallback: resolveBaromKagyuLocale,
       home: CalendarHomeScreen(
+        calendarStore: calendarStore,
         syncCalendar: syncCalendar,
         initialLastSyncedAt: initialLastSyncedAt,
       ),
@@ -56,10 +60,12 @@ Locale resolveBaromKagyuLocale(
 class CalendarHomeScreen extends StatefulWidget {
   const CalendarHomeScreen({
     super.key,
+    this.calendarStore,
     this.syncCalendar,
     this.initialLastSyncedAt,
   });
 
+  final Future<List<CalendarFeedRow>> Function()? calendarStore;
   final Future<DateTime> Function()? syncCalendar;
   final DateTime? initialLastSyncedAt;
 
@@ -75,25 +81,30 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   };
   DateTime? _lastSyncedAt;
   bool _isSyncing = false;
+  CalendarMonth _calendarMonth = sampleCalendarEntries;
 
   @override
   void initState() {
     super.initState();
     _lastSyncedAt = widget.initialLastSyncedAt;
+    _loadStoredCalendar();
   }
 
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
     final screens = [
-      TodayScreen(entry: sampleCalendarEntries.today),
-      MonthScreen(month: sampleCalendarEntries),
+      TodayScreen(
+        monthTitle: _calendarMonth.title,
+        entry: _calendarMonth.today,
+      ),
+      MonthScreen(month: _calendarMonth),
       _SectionScreen(title: localizations.practice),
       NotificationSettingsScreen(
         enabled: _enabledReminderCategories,
         lastSyncedAt: _lastSyncedAt,
         isSyncing: _isSyncing,
-        onRetrySync: _retrySync,
+        onRetrySync: widget.syncCalendar == null ? null : _retrySync,
         onChanged: (categories) {
           setState(() => _enabledReminderCategories = categories);
         },
@@ -144,6 +155,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
         _lastSyncedAt = lastSyncedAt;
         _isSyncing = false;
       });
+      await _loadStoredCalendar();
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSyncing = false);
@@ -151,6 +163,17 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
         SnackBar(content: Text(AppLocalizations.of(context).syncFailed)),
       );
     }
+  }
+
+  Future<void> _loadStoredCalendar() async {
+    final calendarStore = widget.calendarStore;
+    if (calendarStore == null) return;
+
+    final rows = await calendarStore();
+    if (!mounted) return;
+    setState(() {
+      _calendarMonth = calendarMonthFromFeedRows(rows);
+    });
   }
 }
 

@@ -4,8 +4,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../calendar/domain/calendar_entry.dart';
 
 class TodayScreen extends StatelessWidget {
-  const TodayScreen({super.key, required this.entry});
+  const TodayScreen({super.key, required this.monthTitle, required this.entry});
 
+  final String monthTitle;
   final CalendarEntry entry;
 
   @override
@@ -19,7 +20,7 @@ class TodayScreen extends StatelessWidget {
           pinned: true,
           backgroundColor: const Color(0xFF9B0F2E),
           foregroundColor: Colors.white,
-          title: const Text('February 2021'),
+          title: Text(monthTitle),
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 16),

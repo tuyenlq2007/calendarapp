@@ -80,7 +80,7 @@ class CalendarFeedRow implements CalendarFeedEntry {
     if (id.trim().isEmpty) {
       throw const FormatException('calendar feed row id is required');
     }
-    if (version < 0) {
+    if (version <= 0) {
       throw const FormatException('calendar feed row version must be positive');
     }
     if (status != 'published' && status != 'archived') {

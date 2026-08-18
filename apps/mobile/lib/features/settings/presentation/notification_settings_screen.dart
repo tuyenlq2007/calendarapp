@@ -17,7 +17,7 @@ class NotificationSettingsScreen extends StatelessWidget {
   final Set<ReminderCategory> enabled;
   final ValueChanged<Set<ReminderCategory>> onChanged;
   final DateTime? lastSyncedAt;
-  final VoidCallback onRetrySync;
+  final VoidCallback? onRetrySync;
   final bool isSyncing;
 
   @override

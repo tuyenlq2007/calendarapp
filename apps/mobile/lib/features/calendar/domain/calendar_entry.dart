@@ -1,3 +1,5 @@
+import '../data/calendar_database.dart';
+
 class CalendarEntry {
   const CalendarEntry({
     required this.day,
@@ -45,6 +47,68 @@ class CalendarMonth {
   }
 }
 
+CalendarEntry calendarEntryFromFeedRow(CalendarFeedRow row) {
+  return CalendarEntry(
+    day: row.gregorianDate.day,
+    weekday: row.gregorianDate.weekdayName,
+    tibetanDateText: row.tibetanDateText,
+    titleEn: row.titleEn,
+    titleBo: row.titleBo,
+    descriptionEn: row.descriptionEn,
+    lunarDay: row.gregorianDate.day,
+    isDharmicDay: true,
+  );
+}
+
+CalendarMonth calendarMonthFromFeedRows(List<CalendarFeedRow> rows) {
+  final activeRows = rows.where((row) => !row.isWithdrawn).toList();
+  if (activeRows.isEmpty) return sampleCalendarEntries;
+
+  final entries = [for (final row in activeRows) calendarEntryFromFeedRow(row)];
+  final firstDate = activeRows.first.gregorianDate;
+
+  return CalendarMonth(
+    title: '${firstDate.monthName} ${firstDate.year}',
+    today: entries.first,
+    entries: entries,
+    daysInMonth: DateTime(firstDate.year, firstDate.month + 1, 0).day,
+    firstWeekdayOffset: DateTime(firstDate.year, firstDate.month).weekday - 1,
+  );
+}
+
+extension on DateTime {
+  String get weekdayName {
+    return switch (weekday) {
+      DateTime.monday => 'Monday',
+      DateTime.tuesday => 'Tuesday',
+      DateTime.wednesday => 'Wednesday',
+      DateTime.thursday => 'Thursday',
+      DateTime.friday => 'Friday',
+      DateTime.saturday => 'Saturday',
+      DateTime.sunday => 'Sunday',
+      _ => '',
+    };
+  }
+
+  String get monthName {
+    return switch (month) {
+      DateTime.january => 'January',
+      DateTime.february => 'February',
+      DateTime.march => 'March',
+      DateTime.april => 'April',
+      DateTime.may => 'May',
+      DateTime.june => 'June',
+      DateTime.july => 'July',
+      DateTime.august => 'August',
+      DateTime.september => 'September',
+      DateTime.october => 'October',
+      DateTime.november => 'November',
+      DateTime.december => 'December',
+      _ => '',
+    };
+  }
+}
+
 const sampleCalendarEntries = CalendarMonth(
   title: 'February 2021',
   daysInMonth: 28,
@@ -55,8 +119,7 @@ const sampleCalendarEntries = CalendarMonth(
     tibetanDateText: 'བོད་ཟླ ༡༠ ཚེས ༡༠',
     titleEn: 'Guru Rinpoche day',
     titleBo: 'གུ་རུ་རིན་པོ་ཆེའི་དུས་ཆེན།',
-    descriptionEn:
-        'Bad day for hanging prayer flags. Birthday of the present Gyalwang Drukpa and Guru Padmasambhava manifestations.',
+    descriptionEn: 'Bad day for hanging prayer flags. Birthday of the present Gyalwang Drukpa and Guru Padmasambhava manifestations.',
     lunarDay: 10,
     isHighlighted: true,
     isDharmicDay: true,
@@ -98,8 +161,7 @@ const sampleCalendarEntries = CalendarMonth(
       tibetanDateText: 'བོད་ཟླ ༡༠ ཚེས ༡༠',
       titleEn: 'Guru Rinpoche day',
       titleBo: 'གུ་རུ་རིན་པོ་ཆེའི་དུས་ཆེན།',
-      descriptionEn:
-          'Bad day for hanging prayer flags. Birthday of the present Gyalwang Drukpa and Guru Padmasambhava manifestations.',
+      descriptionEn: 'Bad day for hanging prayer flags. Birthday of the present Gyalwang Drukpa and Guru Padmasambhava manifestations.',
       lunarDay: 10,
       isHighlighted: true,
       isDharmicDay: true,

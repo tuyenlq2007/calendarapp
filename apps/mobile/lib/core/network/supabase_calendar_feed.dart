@@ -13,17 +13,23 @@ class NetworkException implements Exception {
 }
 
 class SupabaseCalendarFeed implements CalendarFeed {
-  SupabaseCalendarFeed(this.client);
+  SupabaseCalendarFeed(this._loadRows);
 
-  final SupabaseClient client;
+  factory SupabaseCalendarFeed.fromClient(SupabaseClient client) {
+    return SupabaseCalendarFeed(
+      (version) => client.rpc<List<dynamic>>(
+        'calendar_changes',
+        params: {'after_version': version},
+      ),
+    );
+  }
+
+  final Future<List<dynamic>> Function(int version) _loadRows;
 
   @override
   Future<CalendarChangePage> changesAfter(int version) async {
     try {
-      final rows = await client.rpc<List<dynamic>>(
-        'calendar_changes',
-        params: {'after_version': version},
-      );
+      final rows = await _loadRows(version);
 
       return CalendarChangePage.fromJsonRows(
         rows.map((row) {
