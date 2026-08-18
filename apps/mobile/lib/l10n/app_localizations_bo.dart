@@ -43,4 +43,23 @@ class AppLocalizationsBo extends AppLocalizations {
   String lastUpdated(String date) {
     return 'ཐ་མའི་གསར་སྒྱུར། $date';
   }
+
+  @override
+  String get syncStatus =>
+      'à½˜à½‰à½˜à¼‹à½¦à¾¦à¾²à½ºà½£à¼‹à½‚à½“à½¦à¼‹à½šà½´à½£à¼';
+
+  @override
+  String get notUpdatedYet =>
+      'à½‘à¼‹à½‘à½´à½„à¼‹à½‚à½¦à½¢à¼‹à½¦à¾’à¾±à½´à½¢à¼‹à½–à¾±à½¦à¼‹à½˜à½ºà½‘à¼';
+
+  @override
+  String get retry => 'à½¡à½„à¼‹à½–à½¦à¾à¾±à½¢à¼';
+
+  @override
+  String get syncing =>
+      'à½˜à½‰à½˜à¼‹à½¦à¾¦à¾²à½ºà½£à¼‹à½–à¾±à½ºà½‘à¼‹à½–à½žà½²à½“à¼';
+
+  @override
+  String get syncFailed =>
+      'à½˜à½‰à½˜à¼‹à½¦à¾¦à¾²à½ºà½£à¼‹à½˜à¼‹à½ à½‚à¾²à½´à½–à¼ à½£à½¼à¼‹à½à½¼à½ à½²à¼‹à½“à½„à¼‹à½‘à½¼à½“à¼‹à½¢à¾Ÿà½²à½„à¼‹à½”à¼‹à½‰à½¢à¼‹à½¡à½¼à½‘à¼';
 }

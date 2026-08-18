@@ -163,6 +163,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Last updated: {date}'**
   String lastUpdated(String date);
+
+  /// Title for the calendar synchronization status tile.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync status'**
+  String get syncStatus;
+
+  /// Status text shown before synchronized content has been updated.
+  ///
+  /// In en, this message translates to:
+  /// **'Not updated yet'**
+  String get notUpdatedYet;
+
+  /// Button label for retrying calendar synchronization.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// Button label shown while calendar synchronization is in progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing...'**
+  String get syncing;
+
+  /// Snack bar message shown when calendar synchronization fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed. Existing calendar content was kept.'**
+  String get syncFailed;
 }
 
 class _AppLocalizationsDelegate

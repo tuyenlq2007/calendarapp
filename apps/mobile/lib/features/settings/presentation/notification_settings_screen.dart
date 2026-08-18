@@ -2,16 +2,23 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../reminders/domain/reminder_category.dart';
+import 'sync_status_tile.dart';
 
 class NotificationSettingsScreen extends StatelessWidget {
   const NotificationSettingsScreen({
     super.key,
     required this.enabled,
     required this.onChanged,
+    required this.lastSyncedAt,
+    required this.onRetrySync,
+    this.isSyncing = false,
   });
 
   final Set<ReminderCategory> enabled;
   final ValueChanged<Set<ReminderCategory>> onChanged;
+  final DateTime? lastSyncedAt;
+  final VoidCallback onRetrySync;
+  final bool isSyncing;
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +28,12 @@ class NotificationSettingsScreen extends StatelessWidget {
       appBar: AppBar(title: Text(localizations.notificationSettings)),
       body: ListView(
         children: [
+          SyncStatusTile(
+            lastUpdated: lastSyncedAt,
+            onRetry: onRetrySync,
+            isSyncing: isSyncing,
+          ),
+          const Divider(height: 1),
           for (final category in ReminderCategory.values)
             CheckboxListTile(
               value: enabled.contains(category),

@@ -43,4 +43,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String lastUpdated(String date) {
     return 'Last updated: $date';
   }
+
+  @override
+  String get syncStatus => 'Sync status';
+
+  @override
+  String get notUpdatedYet => 'Not updated yet';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get syncing => 'Syncing...';
+
+  @override
+  String get syncFailed => 'Sync failed. Existing calendar content was kept.';
 }

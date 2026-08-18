@@ -9,9 +9,16 @@ import 'features/today/presentation/today_screen.dart';
 import 'l10n/app_localizations.dart';
 
 class BaromKagyuCalendarApp extends StatelessWidget {
-  const BaromKagyuCalendarApp({super.key, this.locale});
+  const BaromKagyuCalendarApp({
+    super.key,
+    this.locale,
+    this.syncCalendar,
+    this.initialLastSyncedAt,
+  });
 
   final Locale? locale;
+  final Future<DateTime> Function()? syncCalendar;
+  final DateTime? initialLastSyncedAt;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +30,10 @@ class BaromKagyuCalendarApp extends StatelessWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       localeListResolutionCallback: resolveBaromKagyuLocale,
-      home: const CalendarHomeScreen(),
+      home: CalendarHomeScreen(
+        syncCalendar: syncCalendar,
+        initialLastSyncedAt: initialLastSyncedAt,
+      ),
     );
   }
 }
@@ -44,7 +54,14 @@ Locale resolveBaromKagyuLocale(
 }
 
 class CalendarHomeScreen extends StatefulWidget {
-  const CalendarHomeScreen({super.key});
+  const CalendarHomeScreen({
+    super.key,
+    this.syncCalendar,
+    this.initialLastSyncedAt,
+  });
+
+  final Future<DateTime> Function()? syncCalendar;
+  final DateTime? initialLastSyncedAt;
 
   @override
   State<CalendarHomeScreen> createState() => _CalendarHomeScreenState();
@@ -56,6 +73,14 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     ReminderCategory.dailyPractice,
     ReminderCategory.holyDays,
   };
+  DateTime? _lastSyncedAt;
+  bool _isSyncing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _lastSyncedAt = widget.initialLastSyncedAt;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +91,9 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
       _SectionScreen(title: localizations.practice),
       NotificationSettingsScreen(
         enabled: _enabledReminderCategories,
+        lastSyncedAt: _lastSyncedAt,
+        isSyncing: _isSyncing,
+        onRetrySync: _retrySync,
         onChanged: (categories) {
           setState(() => _enabledReminderCategories = categories);
         },
@@ -102,6 +130,27 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _retrySync() async {
+    final syncCalendar = widget.syncCalendar;
+    if (syncCalendar == null || _isSyncing) return;
+
+    setState(() => _isSyncing = true);
+    try {
+      final lastSyncedAt = await syncCalendar();
+      if (!mounted) return;
+      setState(() {
+        _lastSyncedAt = lastSyncedAt;
+        _isSyncing = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSyncing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).syncFailed)),
+      );
+    }
   }
 }
 

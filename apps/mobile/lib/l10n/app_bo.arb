@@ -49,5 +49,25 @@
         "example": "2026-08-17"
       }
     }
+  },
+  "syncStatus": "à½˜à½‰à½˜à¼‹à½¦à¾¦à¾²à½ºà½£à¼‹à½‚à½“à½¦à¼‹à½šà½´à½£à¼",
+  "@syncStatus": {
+    "description": "Title for the calendar synchronization status tile."
+  },
+  "notUpdatedYet": "à½‘à¼‹à½‘à½´à½„à¼‹à½‚à½¦à½¢à¼‹à½¦à¾’à¾±à½´à½¢à¼‹à½–à¾±à½¦à¼‹à½˜à½ºà½‘à¼",
+  "@notUpdatedYet": {
+    "description": "Status text shown before synchronized content has been updated."
+  },
+  "retry": "à½¡à½„à¼‹à½–à½¦à¾à¾±à½¢à¼",
+  "@retry": {
+    "description": "Button label for retrying calendar synchronization."
+  },
+  "syncing": "à½˜à½‰à½˜à¼‹à½¦à¾¦à¾²à½ºà½£à¼‹à½–à¾±à½ºà½‘à¼‹à½–à½žà½²à½“à¼",
+  "@syncing": {
+    "description": "Button label shown while calendar synchronization is in progress."
+  },
+  "syncFailed": "à½˜à½‰à½˜à¼‹à½¦à¾¦à¾²à½ºà½£à¼‹à½˜à¼‹à½ à½‚à¾²à½´à½–à¼ à½£à½¼à¼‹à½à½¼à½ à½²à¼‹à½“à½„à¼‹à½‘à½¼à½“à¼‹à½¢à¾Ÿà½²à½„à¼‹à½”à¼‹à½‰à½¢à¼‹à½¡à½¼à½‘à¼",
+  "@syncFailed": {
+    "description": "Snack bar message shown when calendar synchronization fails."
   }
 }

@@ -49,5 +49,25 @@
         "example": "2026-08-17"
       }
     }
+  },
+  "syncStatus": "Sync status",
+  "@syncStatus": {
+    "description": "Title for the calendar synchronization status tile."
+  },
+  "notUpdatedYet": "Not updated yet",
+  "@notUpdatedYet": {
+    "description": "Status text shown before synchronized content has been updated."
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Button label for retrying calendar synchronization."
+  },
+  "syncing": "Syncing...",
+  "@syncing": {
+    "description": "Button label shown while calendar synchronization is in progress."
+  },
+  "syncFailed": "Sync failed. Existing calendar content was kept.",
+  "@syncFailed": {
+    "description": "Snack bar message shown when calendar synchronization fails."
   }
 }
