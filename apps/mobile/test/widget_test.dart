@@ -17,6 +17,18 @@ void main() {
       find.textContaining('Bad day for hanging prayer flags'),
       findsOneWidget,
     );
+    expect(find.textContaining('Gyalwang Drukpa'), findsNothing);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Image &&
+            widget.image is AssetImage &&
+            (widget.image as AssetImage).assetName ==
+                'assets/images/barom_kagyu_logo.png',
+        description: 'Barom Kagyu logo asset image',
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Select Day'), findsOneWidget);
     expect(find.text('Water - Wind'), findsOneWidget);
     expect(find.text('Negative Elemental Combination'), findsOneWidget);

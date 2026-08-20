@@ -207,86 +207,13 @@ class _SacredSymbol extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 134,
-      child: Column(
-        children: [
-          Container(
-            width: 44,
-            height: 32,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE63C45),
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(24),
-                bottom: Radius.circular(14),
-              ),
-              boxShadow: [
-                BoxShadow(color: Color(0x66000000), offset: Offset(0, 4)),
-              ],
-            ),
-            child: const Icon(Icons.auto_awesome, color: _gold, size: 20),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFFF0BD4D),
-              border: Border.all(color: const Color(0xFF6F1013), width: 4),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x66000000),
-                  blurRadius: 14,
-                  offset: Offset(0, 8),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.filter_vintage,
-              color: Color(0xFF0E8577),
-              size: 62,
-            ),
-          ),
-          Transform.translate(
-            offset: const Offset(0, -2),
-            child: Container(
-              width: 124,
-              height: 54,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE94778),
-                borderRadius: BorderRadius.circular(50),
-                border: Border.all(color: const Color(0xFFFF84A8), width: 3),
-              ),
-              child: const Icon(
-                Icons.local_florist,
-                color: Color(0xFFFFD7E4),
-                size: 38,
-              ),
-            ),
-          ),
-          Container(
-            width: 132,
-            padding: const EdgeInsets.symmetric(vertical: 7),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFE58B),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: const [
-                BoxShadow(color: Color(0xFFC69027), offset: Offset(0, 5)),
-              ],
-            ),
-            child: const Text(
-              'OM AH HUNG',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFFB32123),
-                fontWeight: FontWeight.w800,
-                fontSize: 12,
-                letterSpacing: 0,
-              ),
-            ),
-          ),
-        ],
+    return Semantics(
+      label: 'Barom Kagyu logo',
+      image: true,
+      child: Image.asset(
+        'assets/images/barom_kagyu_logo.png',
+        width: 150,
+        fit: BoxFit.contain,
       ),
     );
   }
