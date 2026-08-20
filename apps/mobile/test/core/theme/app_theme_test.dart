@@ -8,8 +8,8 @@ void main() {
     expect(AppTheme.light.colorScheme.primary, const Color(0xFF8B0E2F));
   });
 
-  test('home reference theme uses dark red surfaces and gold navigation', () {
-    expect(AppTheme.light.scaffoldBackgroundColor, const Color(0xFF610005));
+  test('home reference theme uses parchment surfaces and gold navigation', () {
+    expect(AppTheme.light.scaffoldBackgroundColor, const Color(0xFFF4D990));
     expect(AppTheme.light.colorScheme.secondary, const Color(0xFFF6D985));
     expect(
       AppTheme.light.navigationBarTheme.backgroundColor,

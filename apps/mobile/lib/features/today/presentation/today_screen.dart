@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../calendar/domain/calendar_entry.dart';
 
-const _pageRed = Color(0xFF610005);
-const _panelRed = Color(0xFF790006);
-const _panelDarkRed = Color(0xFF570005);
-const _borderRed = Color(0xFFAD2027);
+const _parchment = Color(0xFFF4D990);
+const _panelParchment = Color(0xFFF8E6B3);
+const _headerRed = Color(0xFFA9181D);
+const _borderGold = Color(0xFFD4A85A);
+const _metaGold = Color(0xFFF1E36A);
 const _gold = Color(0xFFF6D985);
-const _white = Color(0xFFFFFDF8);
+const _textDark = Color(0xFF2D130D);
+const _deepBlue = Color(0xFF00385D);
+const _maroon = Color(0xFF9B0F18);
+const _green = Color(0xFF087326);
+const _blue = Color(0xFF0C28D8);
 
 class TodayScreen extends StatelessWidget {
   const TodayScreen({super.key, required this.monthTitle, required this.entry});
@@ -18,23 +23,26 @@ class TodayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _pageRed,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          key: const ValueKey('today-scroll'),
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
-          child: Column(
-            children: [
-              _TopHeader(monthTitle: monthTitle),
-              const SizedBox(height: 18),
-              _SelectedDayPanel(entry: entry),
-              const SizedBox(height: 10),
-              const _ElementPanel(),
-              const SizedBox(height: 10),
-              _TibetanDateDetails(entry: entry),
-            ],
+      backgroundColor: _parchment,
+      body: Column(
+        children: [
+          _TopHeader(monthTitle: monthTitle),
+          Expanded(
+            child: SingleChildScrollView(
+              key: const ValueKey('today-scroll'),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
+              child: Column(
+                children: [
+                  _SelectedDayPanel(entry: entry),
+                  const SizedBox(height: 10),
+                  const _ElementPanel(),
+                  const SizedBox(height: 10),
+                  _TibetanDateDetails(entry: entry),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -47,47 +55,67 @@ class _TopHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Expanded(
-          flex: 8,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Today',
-              maxLines: 1,
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: _gold,
-                fontFamily: 'serif',
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w800,
-                height: .95,
-                letterSpacing: 0,
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: _headerRed,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(22)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x55000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 26, 16, 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                flex: 8,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Today',
+                    maxLines: 1,
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: _gold,
+                      fontFamily: 'serif',
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w800,
+                      height: .95,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 14),
+              Flexible(
+                flex: 9,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    monthTitle,
+                    maxLines: 1,
+                    textAlign: TextAlign.end,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      color: _gold,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 14),
-        Flexible(
-          flex: 9,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerRight,
-            child: Text(
-              monthTitle,
-              maxLines: 1,
-              textAlign: TextAlign.end,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: _gold,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0,
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -116,7 +144,7 @@ class _SelectedDayPanel extends StatelessWidget {
             entry.tibetanDateText,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: _white,
+              color: _textDark,
               fontWeight: FontWeight.w700,
               height: 1.16,
               letterSpacing: 0,
@@ -127,7 +155,7 @@ class _SelectedDayPanel extends StatelessWidget {
             entry.titleEn,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: _white,
+              color: _textDark,
               fontWeight: FontWeight.w900,
               height: 1.12,
               letterSpacing: 0,
@@ -138,7 +166,7 @@ class _SelectedDayPanel extends StatelessWidget {
             entry.descriptionEn,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: _white,
+              color: _textDark,
               fontWeight: FontWeight.w800,
               height: 1.14,
               letterSpacing: 0,
@@ -149,8 +177,9 @@ class _SelectedDayPanel extends StatelessWidget {
             'We are the heirs of our own actions\n~ The Buddha ~',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: _white,
+              color: _green,
               fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w800,
               height: 1.2,
               letterSpacing: 0,
             ),
@@ -178,7 +207,7 @@ class _DateStack extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: _white,
+              color: _maroon,
               fontWeight: FontWeight.w900,
               height: 1,
               letterSpacing: 0,
@@ -192,7 +221,7 @@ class _DateStack extends StatelessWidget {
           child: Text(
             '${entry.day}',
             style: const TextStyle(
-              color: _white,
+              color: _deepBlue,
               fontSize: 150,
               fontWeight: FontWeight.w900,
               height: .78,
@@ -235,7 +264,7 @@ class _ElementPanel extends StatelessWidget {
             'Water - Wind',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: _white,
+              color: _textDark,
               fontWeight: FontWeight.w800,
               height: 1.12,
               letterSpacing: 0,
@@ -245,7 +274,7 @@ class _ElementPanel extends StatelessWidget {
             'Negative Elemental Combination',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: _white,
+              color: _blue,
               fontWeight: FontWeight.w800,
               height: 1.12,
               letterSpacing: 0,
@@ -256,8 +285,8 @@ class _ElementPanel extends StatelessWidget {
             "This negative elemental combination will cause disharmony among one's loved ones",
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: _white,
-              fontWeight: FontWeight.w500,
+              color: _textDark,
+              fontWeight: FontWeight.w700,
               height: 1.16,
               letterSpacing: 0,
             ),
@@ -329,12 +358,12 @@ class _MetaCell extends StatelessWidget {
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 4),
-          color: _panelDarkRed,
+          color: _metaGold,
           child: Text(
             label,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: _gold,
+              color: Color(0xFF795D1D),
               fontWeight: FontWeight.w900,
               height: 1,
               letterSpacing: 0,
@@ -350,7 +379,7 @@ class _MetaCell extends StatelessWidget {
                 child: Text(
                   value,
                   style: Theme.of(context).textTheme.displayMedium?.copyWith(
-                    color: _white,
+                    color: _maroon,
                     fontWeight: FontWeight.w900,
                     height: .9,
                     letterSpacing: 0,
@@ -364,7 +393,7 @@ class _MetaCell extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: _white,
+                  color: _textDark,
                   fontWeight: FontWeight.w600,
                   height: 1.08,
                   letterSpacing: 0,
@@ -383,7 +412,7 @@ class _MetaDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(width: 1, color: _borderRed);
+    return Container(width: 1, color: _borderGold);
   }
 }
 
@@ -397,14 +426,14 @@ class _ReferencePanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: _panelRed,
+        color: _panelParchment,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _borderRed),
+        border: Border.all(color: _borderGold),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x33000000),
-            blurRadius: 22,
-            offset: Offset(0, 12),
+            color: Color(0x22000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
           ),
         ],
       ),

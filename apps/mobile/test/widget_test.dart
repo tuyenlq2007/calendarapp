@@ -10,6 +10,15 @@ void main() {
   ) async {
     await tester.pumpWidget(const BaromKagyuCalendarApp());
 
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Scaffold &&
+            widget.backgroundColor == const Color(0xFFF4D990),
+        description: 'yellow parchment Today scaffold',
+      ),
+      findsOneWidget,
+    );
     expect(find.text('February 2021'), findsOneWidget);
     expect(find.text('22'), findsOneWidget);
     expect(find.text('Guru Rinpoche day'), findsOneWidget);
