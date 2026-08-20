@@ -113,32 +113,43 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
 
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: screens),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() => _selectedIndex = index);
-        },
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(Icons.today_outlined),
-            selectedIcon: const Icon(Icons.today),
-            label: localizations.today,
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          color: Color(0xFF570005),
+          border: Border(top: BorderSide(color: Color(0xFFAD2027))),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: NavigationBar(
+            height: 72,
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() => _selectedIndex = index);
+            },
+            destinations: [
+              NavigationDestination(
+                icon: const Icon(Icons.today_outlined),
+                selectedIcon: const Icon(Icons.today),
+                label: localizations.today,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.calendar_month_outlined),
+                selectedIcon: const Icon(Icons.calendar_month),
+                label: localizations.calendar,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.spa_outlined),
+                selectedIcon: const Icon(Icons.spa),
+                label: localizations.practice,
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.more_horiz),
+                label: localizations.more,
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: const Icon(Icons.calendar_month_outlined),
-            selectedIcon: const Icon(Icons.calendar_month),
-            label: localizations.calendar,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.spa_outlined),
-            selectedIcon: const Icon(Icons.spa),
-            label: localizations.practice,
-          ),
-          NavigationDestination(
-            icon: const Icon(Icons.more_horiz),
-            label: localizations.more,
-          ),
-        ],
+        ),
       ),
     );
   }

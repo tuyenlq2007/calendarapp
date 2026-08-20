@@ -17,6 +17,12 @@ void main() {
       find.textContaining('Bad day for hanging prayer flags'),
       findsOneWidget,
     );
+    expect(find.text('Select Day'), findsOneWidget);
+    expect(find.text('Water - Wind'), findsOneWidget);
+    expect(find.text('Negative Elemental Combination'), findsOneWidget);
+    expect(find.text('Date'), findsOneWidget);
+    expect(find.text('Month'), findsOneWidget);
+    expect(find.text('Year'), findsOneWidget);
     expect(find.text('Today'), findsWidgets);
     expect(find.text('Calendar'), findsOneWidget);
   });

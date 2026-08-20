@@ -7,4 +7,13 @@ void main() {
     expect(AppTheme.light.colorScheme.onSurface, const Color(0xFF3A1717));
     expect(AppTheme.light.colorScheme.primary, const Color(0xFF8B0E2F));
   });
+
+  test('home reference theme uses dark red surfaces and gold navigation', () {
+    expect(AppTheme.light.scaffoldBackgroundColor, const Color(0xFF610005));
+    expect(AppTheme.light.colorScheme.secondary, const Color(0xFFF6D985));
+    expect(
+      AppTheme.light.navigationBarTheme.backgroundColor,
+      const Color(0xFF570005),
+    );
+  });
 }
