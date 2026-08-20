@@ -56,7 +56,7 @@ class _TopHeader extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: Text(
-              'Select Day',
+              'Today',
               maxLines: 1,
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
                 color: _gold,
@@ -171,15 +171,18 @@ class _DateStack extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          entry.weekday.toUpperCase(),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            color: _white,
-            fontWeight: FontWeight.w900,
-            height: 1,
-            letterSpacing: 0,
+        Padding(
+          padding: const EdgeInsets.only(left: 12),
+          child: Text(
+            entry.weekday.toUpperCase(),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              color: _white,
+              fontWeight: FontWeight.w900,
+              height: 1,
+              letterSpacing: 0,
+            ),
           ),
         ),
         const SizedBox(height: 14),

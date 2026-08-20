@@ -29,7 +29,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('Select Day'), findsOneWidget);
+    expect(find.text('Select Day'), findsNothing);
     expect(find.text('Water - Wind'), findsOneWidget);
     expect(find.text('Negative Elemental Combination'), findsOneWidget);
     expect(find.text('Date'), findsOneWidget);
@@ -73,6 +73,17 @@ void main() {
 
     expect(find.text('Guru Rinpoche day'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('selected weekday aligns with the large day number', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const BaromKagyuCalendarApp());
+
+    final weekdayLeft = tester.getTopLeft(find.text('MONDAY')).dx;
+    final dayLeft = tester.getTopLeft(find.text('22')).dx;
+
+    expect(weekdayLeft, closeTo(dayLeft + 12, 1));
   });
 
   testWidgets('unsupported locales fall back to English navigation labels', (
