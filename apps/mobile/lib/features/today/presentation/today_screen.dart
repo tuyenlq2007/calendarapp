@@ -47,38 +47,43 @@ class _TopHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textScaler = MediaQuery.textScalerOf(context);
-    final compact = textScaler.scale(1) > 1.4;
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
-          child: Text(
-            'Select Day',
-            maxLines: compact ? 2 : 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.displaySmall?.copyWith(
-              color: _gold,
-              fontFamily: 'serif',
-              fontStyle: FontStyle.italic,
-              fontWeight: FontWeight.w800,
-              height: .95,
-              letterSpacing: 0,
+          flex: 8,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Select Day',
+              maxLines: 1,
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                color: _gold,
+                fontFamily: 'serif',
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w800,
+                height: .95,
+                letterSpacing: 0,
+              ),
             ),
           ),
         ),
         const SizedBox(width: 14),
         Flexible(
-          child: Text(
-            monthTitle,
-            maxLines: compact ? 2 : 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.end,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: _gold,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0,
+          flex: 9,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              monthTitle,
+              maxLines: 1,
+              textAlign: TextAlign.end,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: _gold,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0,
+              ),
             ),
           ),
         ),
