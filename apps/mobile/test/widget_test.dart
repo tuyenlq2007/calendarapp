@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mobile/app.dart';
 import 'package:mobile/features/calendar/data/calendar_database.dart';
+import 'package:mobile/features/teachings/data/teaching_content_database.dart';
 
 void main() {
   testWidgets('today screen shows bilingual Barom Kagyu calendar content', (
@@ -70,6 +71,33 @@ void main() {
       expect(find.text('Dharma Protector day'), findsOneWidget);
     },
   );
+
+  testWidgets('calendar day selection replaces and resets today content', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const BaromKagyuCalendarApp());
+
+    await tester.tap(find.text('Calendar'));
+    await tester.pumpAndSettle();
+
+    await tester.drag(
+      find.byKey(const ValueKey('month-scroll')),
+      const Offset(0, -220),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const ValueKey('day-cell-25')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Dakini day'), findsOneWidget);
+    expect(find.text('Guru Rinpoche day'), findsNothing);
+
+    await tester.tap(find.text('Today'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Guru Rinpoche day'), findsOneWidget);
+    expect(find.text('Dakini day'), findsNothing);
+  });
 
   testWidgets('today header aligns month left and brand right', (
     WidgetTester tester,
@@ -179,7 +207,7 @@ void main() {
 
     expect(find.text('དེ་རིང་།'), findsWidgets);
     expect(find.text('ལོ་ཐོ།'), findsOneWidget);
-    expect(find.text('སྒྲུབ་པ།'), findsOneWidget);
+    expect(find.text('ཆོས་ཁྲིད།'), findsOneWidget);
     expect(find.text('དེ་ལས་མང་བ།'), findsOneWidget);
   });
 
@@ -201,9 +229,9 @@ void main() {
   ) async {
     await tester.pumpWidget(const BaromKagyuCalendarApp());
 
-    await tester.tap(find.text('Practice'));
+    await tester.tap(find.text('Teachings'));
     await tester.pumpAndSettle();
-    expect(find.text('Practice'), findsWidgets);
+    expect(find.text('Teachings'), findsWidgets);
     expect(tester.takeException(), isNull);
 
     await tester.tap(find.text('More'));
@@ -328,5 +356,77 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.widget<CheckboxListTile>(dailyPracticeFinder).value, isFalse);
+  });
+
+  testWidgets('teachings tab bookmarks offline-eligible articles', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        teachingContentStore: () async => [
+          TeachingContentRow(
+            id: 'refuge-practice',
+            version: 1,
+            slug: 'refuge-practice',
+            type: 'article',
+            category: 'Practice',
+            titleEn: 'Refuge Practice',
+            titleBo: 'སྐྱབས་འགྲོ།',
+            summaryEn: 'A short teaching for daily practice.',
+            summaryBo: 'ཉིན་རེའི་ཆོས་ཁྲིད།',
+            bodyEn: 'Take refuge with clear motivation.',
+            bodyBo: 'དགོངས་པ་གསལ་པོས་སྐྱབས་འགྲོ་བྱ།',
+            youtubeUrl: null,
+            imageUrl: null,
+            offlineEligible: true,
+            status: 'published',
+          ),
+          TeachingContentRow(
+            id: 'lineage-video',
+            version: 2,
+            slug: 'lineage-video',
+            type: 'video',
+            category: 'Lineage',
+            titleEn: 'Lineage Teaching Video',
+            titleBo: 'བརྒྱུད་པའི་ཆོས་ཁྲིད།',
+            summaryEn: 'A YouTube teaching for online viewing.',
+            summaryBo: 'དྲ་ཐོག་གཟིགས་རྒྱུའི་ཆོས་ཁྲིད།',
+            bodyEn: '',
+            bodyBo: '',
+            youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            imageUrl: null,
+            offlineEligible: false,
+            status: 'published',
+          ),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text('Teachings'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Refuge Practice'), findsOneWidget);
+    expect(find.text('Lineage Teaching Video'), findsOneWidget);
+    expect(find.text('YouTube'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Save offline'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Saved library'), findsOneWidget);
+    expect(find.text('Saved offline'), findsOneWidget);
+  });
+
+  testWidgets('teachings tab keeps sample content before sync data exists', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(teachingContentStore: () async => []),
+    );
+
+    await tester.tap(find.text('Teachings'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Refuge Practice'), findsOneWidget);
+    expect(find.text('Lineage Teaching Video'), findsOneWidget);
   });
 }

@@ -7,3 +7,9 @@ export {
   PublicationStatusSchema,
   type CalendarEntry,
 } from "./calendar-entry";
+
+export {
+  ContentEntrySchema,
+  ContentTypeSchema,
+  type ContentEntry,
+} from "./content-entry";
