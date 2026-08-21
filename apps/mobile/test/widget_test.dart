@@ -44,7 +44,8 @@ void main() {
     expect(find.text('Date'), findsOneWidget);
     expect(find.text('Month'), findsOneWidget);
     expect(find.text('Year'), findsOneWidget);
-    expect(find.text('Today'), findsWidgets);
+    expect(find.text('Barom Kagyu'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
     expect(find.text('Calendar'), findsOneWidget);
   });
 
@@ -70,6 +71,37 @@ void main() {
     },
   );
 
+  testWidgets('today header aligns month left and brand right', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const BaromKagyuCalendarApp());
+
+    final brandFinder = find.text('Barom Kagyu');
+    final monthFinder = find.text('February 2021');
+    final todayScaffoldFinder = find.byWidgetPredicate(
+      (widget) =>
+          widget is Scaffold &&
+          widget.backgroundColor == const Color(0xFFF4D990),
+      description: 'yellow parchment Today scaffold',
+    );
+
+    final brandTopRight = tester.getTopRight(brandFinder);
+    final monthTopLeft = tester.getTopLeft(monthFinder);
+    final brandCenter = tester.getCenter(brandFinder);
+    final monthCenter = tester.getCenter(monthFinder);
+    final scaffoldTopRight = tester.getTopRight(todayScaffoldFinder);
+    final brandText = tester.widget<Text>(brandFinder);
+    final monthText = tester.widget<Text>(monthFinder);
+    final brandFontSize = brandText.style!.fontSize!;
+    final monthFontSize = monthText.style!.fontSize!;
+
+    expect(monthTopLeft.dx, lessThan(24));
+    expect(brandTopRight.dx, greaterThan(scaffoldTopRight.dx - 24));
+    expect(monthCenter.dy, closeTo(brandCenter.dy, 1));
+    expect(brandFontSize, lessThan(monthFontSize));
+    expect(brandText.style?.fontStyle, isNot(FontStyle.italic));
+  });
+
   testWidgets('calendar UI remains usable with large text', (
     WidgetTester tester,
   ) async {
@@ -84,15 +116,42 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('selected weekday aligns with the large day number', (
+  testWidgets('selected weekday centers above the large day number', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const BaromKagyuCalendarApp());
 
-    final weekdayLeft = tester.getTopLeft(find.text('MONDAY')).dx;
-    final dayLeft = tester.getTopLeft(find.text('22')).dx;
+    final weekdayCenter = tester.getCenter(find.text('MONDAY')).dx;
+    final dayCenter = tester.getCenter(find.text('22')).dx;
 
-    expect(weekdayLeft, closeTo(dayLeft + 12, 1));
+    expect(weekdayCenter, closeTo(dayCenter, 1));
+  });
+
+  testWidgets('date text is smaller and day bottom aligns with logo', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const BaromKagyuCalendarApp());
+
+    final weekdayFinder = find.text('MONDAY');
+    final dayFinder = find.text('22');
+    final dayBottom = tester.getBottomLeft(dayFinder).dy;
+    final logoFinder = find.byWidgetPredicate(
+      (widget) =>
+          widget is Image &&
+          widget.image is AssetImage &&
+          (widget.image as AssetImage).assetName ==
+              'assets/images/barom_kagyu_logo.png',
+      description: 'Barom Kagyu logo asset image',
+    );
+    final logoBottom = tester.getBottomLeft(logoFinder).dy;
+    final weekdayText = tester.widget<Text>(weekdayFinder);
+    final dayText = tester.widget<Text>(dayFinder);
+    final weekdayFontSize = weekdayText.style!.fontSize!;
+    final dayFontSize = dayText.style!.fontSize!;
+
+    expect(weekdayFontSize, 24);
+    expect(dayFontSize, 140);
+    expect(logoBottom, closeTo(dayBottom, 2));
   });
 
   testWidgets('unsupported locales fall back to English navigation labels', (

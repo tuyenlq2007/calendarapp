@@ -73,40 +73,39 @@ class _TopHeader extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 26, 16, 16),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                flex: 8,
+                flex: 7,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Today',
+                    monthTitle,
                     maxLines: 1,
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: _gold,
-                      fontFamily: 'serif',
-                      fontStyle: FontStyle.italic,
                       fontWeight: FontWeight.w800,
-                      height: .95,
+                      height: 1,
                       letterSpacing: 0,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
-              Flexible(
-                flex: 9,
+              const SizedBox(width: 10),
+              Expanded(
+                flex: 11,
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerRight,
                   child: Text(
-                    monthTitle,
+                    'Barom Kagyu',
                     maxLines: 1,
                     textAlign: TextAlign.end,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: _gold,
-                      fontWeight: FontWeight.w800,
+                      fontFamily: 'serif',
+                      fontWeight: FontWeight.w700,
                       letterSpacing: 0,
                     ),
                   ),
@@ -132,7 +131,7 @@ class _SelectedDayPanel extends StatelessWidget {
       child: Column(
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(child: _DateStack(entry: entry)),
               const SizedBox(width: 10),
@@ -197,39 +196,43 @@ class _DateStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 12),
-          child: Text(
-            entry.weekday.toUpperCase(),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: _maroon,
-              fontWeight: FontWeight.w900,
-              height: 1,
-              letterSpacing: 0,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: IntrinsicWidth(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              entry.weekday.toUpperCase(),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: _maroon,
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                height: 1,
+                letterSpacing: 0,
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 14),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Text(
-            '${entry.day}',
-            style: const TextStyle(
-              color: _deepBlue,
-              fontSize: 150,
-              fontWeight: FontWeight.w900,
-              height: .78,
-              letterSpacing: 0,
+            const SizedBox(height: 14),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.center,
+              child: Text(
+                '${entry.day}',
+                style: const TextStyle(
+                  color: _deepBlue,
+                  fontSize: 140,
+                  fontWeight: FontWeight.w900,
+                  height: .78,
+                  letterSpacing: 0,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
@@ -245,6 +248,7 @@ class _SacredSymbol extends StatelessWidget {
       child: Image.asset(
         'assets/images/barom_kagyu_logo.png',
         width: 150,
+        height: 159,
         fit: BoxFit.contain,
       ),
     );
