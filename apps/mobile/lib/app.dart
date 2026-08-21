@@ -6,6 +6,8 @@ import 'features/calendar/domain/calendar_entry.dart';
 import 'features/calendar/presentation/month_screen.dart';
 import 'features/reminders/domain/reminder_category.dart';
 import 'features/settings/presentation/notification_settings_screen.dart';
+import 'features/teachings/data/teaching_content_database.dart';
+import 'features/teachings/presentation/teachings_screen.dart';
 import 'features/today/presentation/today_screen.dart';
 import 'l10n/app_localizations.dart';
 
@@ -16,12 +18,14 @@ class BaromKagyuCalendarApp extends StatelessWidget {
     this.calendarStore,
     this.syncCalendar,
     this.initialLastSyncedAt,
+    this.teachingContentStore,
   });
 
   final Locale? locale;
   final Future<List<CalendarFeedRow>> Function()? calendarStore;
   final Future<DateTime> Function()? syncCalendar;
   final DateTime? initialLastSyncedAt;
+  final Future<List<TeachingContentRow>> Function()? teachingContentStore;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +41,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
         calendarStore: calendarStore,
         syncCalendar: syncCalendar,
         initialLastSyncedAt: initialLastSyncedAt,
+        teachingContentStore: teachingContentStore,
       ),
     );
   }
@@ -63,11 +68,13 @@ class CalendarHomeScreen extends StatefulWidget {
     this.calendarStore,
     this.syncCalendar,
     this.initialLastSyncedAt,
+    this.teachingContentStore,
   });
 
   final Future<List<CalendarFeedRow>> Function()? calendarStore;
   final Future<DateTime> Function()? syncCalendar;
   final DateTime? initialLastSyncedAt;
+  final Future<List<TeachingContentRow>> Function()? teachingContentStore;
 
   @override
   State<CalendarHomeScreen> createState() => _CalendarHomeScreenState();
@@ -82,12 +89,16 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   DateTime? _lastSyncedAt;
   bool _isSyncing = false;
   CalendarMonth _calendarMonth = sampleCalendarEntries;
+  CalendarEntry? _selectedCalendarEntry;
+  List<TeachingContentRow> _teachingContent = sampleTeachingContent;
+  Set<String> _savedTeachingIds = const {};
 
   @override
   void initState() {
     super.initState();
     _lastSyncedAt = widget.initialLastSyncedAt;
     _loadStoredCalendar();
+    _loadStoredTeachings();
   }
 
   @override
@@ -96,10 +107,14 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     final screens = [
       TodayScreen(
         monthTitle: _calendarMonth.title,
-        entry: _calendarMonth.today,
+        entry: _selectedCalendarEntry ?? _calendarMonth.today,
       ),
-      MonthScreen(month: _calendarMonth),
-      _SectionScreen(title: localizations.practice),
+      MonthScreen(month: _calendarMonth, onEntrySelected: _selectCalendarEntry),
+      TeachingsScreen(
+        items: _teachingContent,
+        savedIds: _savedTeachingIds,
+        onToggleSaved: _toggleSavedTeaching,
+      ),
       NotificationSettingsScreen(
         enabled: _enabledReminderCategories,
         lastSyncedAt: _lastSyncedAt,
@@ -125,7 +140,12 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
             height: 72,
             selectedIndex: _selectedIndex,
             onDestinationSelected: (index) {
-              setState(() => _selectedIndex = index);
+              setState(() {
+                if (index == 0) {
+                  _selectedCalendarEntry = null;
+                }
+                _selectedIndex = index;
+              });
             },
             destinations: [
               NavigationDestination(
@@ -139,9 +159,9 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
                 label: localizations.calendar,
               ),
               NavigationDestination(
-                icon: const Icon(Icons.spa_outlined),
-                selectedIcon: const Icon(Icons.spa),
-                label: localizations.practice,
+                icon: const Icon(Icons.menu_book_outlined),
+                selectedIcon: const Icon(Icons.menu_book),
+                label: localizations.teachings,
               ),
               NavigationDestination(
                 icon: const Icon(Icons.more_horiz),
@@ -184,22 +204,36 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     if (!mounted) return;
     setState(() {
       _calendarMonth = calendarMonthFromFeedRows(rows);
+      _selectedCalendarEntry = null;
     });
   }
-}
 
-class _SectionScreen extends StatelessWidget {
-  const _SectionScreen({required this.title});
+  Future<void> _loadStoredTeachings() async {
+    final teachingContentStore = widget.teachingContentStore;
+    if (teachingContentStore == null) return;
 
-  final String title;
+    final rows = await teachingContentStore();
+    if (!mounted) return;
+    if (rows.isEmpty) return;
+    setState(() {
+      _teachingContent = rows;
+    });
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(title, style: Theme.of(context).textTheme.headlineMedium),
-      ),
-    );
+  void _toggleSavedTeaching(String id) {
+    setState(() {
+      final savedIds = Set<String>.of(_savedTeachingIds);
+      if (!savedIds.add(id)) {
+        savedIds.remove(id);
+      }
+      _savedTeachingIds = savedIds;
+    });
+  }
+
+  void _selectCalendarEntry(CalendarEntry entry) {
+    setState(() {
+      _selectedCalendarEntry = entry;
+      _selectedIndex = 0;
+    });
   }
 }

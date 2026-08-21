@@ -4,9 +4,10 @@ import '../../../l10n/app_localizations.dart';
 import '../domain/calendar_entry.dart';
 
 class MonthScreen extends StatelessWidget {
-  const MonthScreen({super.key, required this.month});
+  const MonthScreen({super.key, required this.month, this.onEntrySelected});
 
   final CalendarMonth month;
+  final ValueChanged<CalendarEntry>? onEntrySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +34,7 @@ class MonthScreen extends StatelessWidget {
             delegate: SliverChildListDelegate([
               const _WeekdayHeader(),
               const SizedBox(height: 8),
-              _MonthGrid(month: month),
+              _MonthGrid(month: month, onEntrySelected: onEntrySelected),
               const SizedBox(height: 16),
               _EventList(entries: month.entries),
             ]),
@@ -71,9 +72,10 @@ class _WeekdayHeader extends StatelessWidget {
 }
 
 class _MonthGrid extends StatelessWidget {
-  const _MonthGrid({required this.month});
+  const _MonthGrid({required this.month, required this.onEntrySelected});
 
   final CalendarMonth month;
+  final ValueChanged<CalendarEntry>? onEntrySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +101,7 @@ class _MonthGrid extends StatelessWidget {
           day: day,
           entry: entry,
           isToday: day == month.today.day,
+          onTap: entry == null ? null : () => onEntrySelected?.call(entry),
         );
       },
     );
@@ -111,11 +114,13 @@ class CalendarDayCell extends StatelessWidget {
     required this.day,
     required this.entry,
     required this.isToday,
+    this.onTap,
   });
 
   final int day;
   final CalendarEntry? entry;
   final bool isToday;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -127,40 +132,45 @@ class CalendarDayCell extends StatelessWidget {
     final foreground = isToday ? Colors.white : const Color(0xFF3A1717);
 
     return Semantics(
+      button: onTap != null,
       label: 'Day $day${entry == null ? '' : ', ${entry!.titleEn}'}',
-      child: Container(
-        margin: const EdgeInsets.all(2),
-        padding: const EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFE0C16F)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$day',
-              style: TextStyle(
-                color: foreground,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 2),
-            if (entry != null)
-              Expanded(
-                child: Text(
-                  entry!.titleEn,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: foreground,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.all(2),
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: const Color(0xFFE0C16F)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$day',
+                style: TextStyle(
+                  color: foreground,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-          ],
+              const SizedBox(height: 2),
+              if (entry != null)
+                Expanded(
+                  child: Text(
+                    entry!.titleEn,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: foreground,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -179,9 +189,8 @@ class _EventList extends StatelessWidget {
       children: [
         Text(
           'Practice days',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: const Color(0xFF8B0E2F),
-          ),
+          style: Theme.of(context).textTheme.titleLarge
+              ?.copyWith(color: const Color(0xFF8B0E2F)),
         ),
         const SizedBox(height: 8),
         for (final entry in entries)
