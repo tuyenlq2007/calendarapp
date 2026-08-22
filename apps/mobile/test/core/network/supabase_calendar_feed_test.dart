@@ -125,6 +125,62 @@ void main() {
     await expectLater(feed.changesAfter(4), throwsA(isA<NetworkException>()));
   });
 
+  test('supabase feed retries transient rpc failures', () async {
+    var attempts = 0;
+    final feed = SupabaseCalendarFeed((_) async {
+      attempts++;
+      if (attempts == 1) {
+        throw StateError('temporary dns failure');
+      }
+      return [
+        {
+          'id': 'published-entry',
+          'version': 7,
+          'gregorian_date': '2026-08-17',
+          'tibetan_date_text': '10th lunar day',
+          'title_en': 'Guru Rinpoche day',
+          'title_bo': 'Published Tibetan title',
+          'description_en': 'Practice day',
+          'description_bo': '',
+          'status': 'published',
+        },
+      ];
+    }, retryDelay: Duration.zero);
+
+    final page = await feed.changesAfter(4);
+
+    expect(attempts, 2);
+    expect(page.entries.single.id, 'published-entry');
+  });
+
+  test('supabase feed tolerates several temporary dns failures', () async {
+    var attempts = 0;
+    final feed = SupabaseCalendarFeed((_) async {
+      attempts++;
+      if (attempts < 5) {
+        throw StateError('temporary dns failure');
+      }
+      return [
+        {
+          'id': 'published-entry',
+          'version': 7,
+          'gregorian_date': '2026-08-17',
+          'tibetan_date_text': '10th lunar day',
+          'title_en': 'Guru Rinpoche day',
+          'title_bo': 'Published Tibetan title',
+          'description_en': 'Practice day',
+          'description_bo': '',
+          'status': 'published',
+        },
+      ];
+    }, retryDelay: Duration.zero);
+
+    final page = await feed.changesAfter(4);
+
+    expect(attempts, 5);
+    expect(page.entries.single.id, 'published-entry');
+  });
+
   test('supabase feed rejects non-object rows', () async {
     final feed = SupabaseCalendarFeed((_) async => ['bad row']);
 

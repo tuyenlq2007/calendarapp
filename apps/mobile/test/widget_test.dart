@@ -72,6 +72,150 @@ void main() {
     },
   );
 
+  testWidgets('calendar month arrows move between adjacent months', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 22),
+        calendarStore: () async => [
+          CalendarFeedRow(
+            id: 'august-entry',
+            version: 1,
+            gregorianDate: DateTime(2026, 8, 22),
+            tibetanDateText: '10th lunar day',
+            titleEn: 'August Cloud Practice',
+            titleBo: 'August Tibetan title',
+            descriptionEn: 'Loaded from Supabase.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Calendar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('August 2026'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Next month'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('September 2026'), findsOneWidget);
+    expect(find.text('No practice days for this month yet.'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Previous month'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('August 2026'), findsOneWidget);
+    expect(find.text('August Cloud Practice'), findsOneWidget);
+  });
+
+  testWidgets(
+    'calendar month selector highlights selected and current months',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(
+          currentDate: DateTime(2026, 8, 22),
+          calendarStore: () async => [
+            CalendarFeedRow(
+              id: 'august-entry',
+              version: 1,
+              gregorianDate: DateTime(2026, 8, 22),
+              tibetanDateText: '10th lunar day',
+              titleEn: 'August Cloud Practice',
+              titleBo: 'August Tibetan title',
+              descriptionEn: 'Loaded from Supabase.',
+              descriptionBo: '',
+              status: 'published',
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Calendar'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.byKey(const ValueKey('month-chip-current-8')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('month-chip-selected-8')),
+        findsOneWidget,
+      );
+      expect(find.byKey(const ValueKey('month-chip-5')), findsOneWidget);
+      expect(find.byKey(const ValueKey('month-chip-6')), findsOneWidget);
+      expect(find.byKey(const ValueKey('month-chip-7')), findsOneWidget);
+      expect(find.byKey(const ValueKey('month-chip-8')), findsOneWidget);
+      expect(find.byKey(const ValueKey('month-chip-9')), findsOneWidget);
+      expect(find.byKey(const ValueKey('month-chip-10')), findsOneWidget);
+      expect(find.byKey(const ValueKey('month-chip-11')), findsNothing);
+      expect(find.byKey(const ValueKey('month-chip-12')), findsNothing);
+      expect(find.byType(Wrap), findsNothing);
+
+      final firstChipCenter = tester.getCenter(
+        find.byKey(const ValueKey('month-chip-5')),
+      );
+      for (final month in [6, 7, 8, 9, 10]) {
+        expect(
+          tester.getCenter(find.byKey(ValueKey('month-chip-$month'))).dy,
+          closeTo(firstChipCenter.dy, 1),
+        );
+      }
+
+      await tester.tap(find.text('Oct'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('October 2026'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('month-chip-current-8')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('month-chip-selected-10')),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('calendar header Today opens Today tab with current day', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 22),
+        calendarStore: () async => [
+          CalendarFeedRow(
+            id: 'current-day-entry',
+            version: 1,
+            gregorianDate: DateTime(2026, 8, 22),
+            tibetanDateText: '10th lunar day',
+            titleEn: 'Current Cloud Practice',
+            titleBo: 'Current Tibetan title',
+            descriptionEn: 'Practice for the real current day.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Calendar'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Open today'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Current Cloud Practice'), findsOneWidget);
+    expect(find.text('22'), findsWidgets);
+    expect(find.text('Calendar'), findsOneWidget);
+  });
+
   testWidgets('calendar day selection replaces and resets today content', (
     WidgetTester tester,
   ) async {
@@ -91,12 +235,15 @@ void main() {
 
     expect(find.text('Dakini day'), findsOneWidget);
     expect(find.text('Guru Rinpoche day'), findsNothing);
+    expect(find.text('Day'), findsOneWidget);
 
-    await tester.tap(find.text('Today'));
+    await tester.tap(find.widgetWithText(TextButton, 'Today'));
     await tester.pumpAndSettle();
 
     expect(find.text('Guru Rinpoche day'), findsOneWidget);
     expect(find.text('Dakini day'), findsNothing);
+    expect(find.text('Day'), findsNothing);
+    expect(find.text('Today'), findsOneWidget);
   });
 
   testWidgets('today header aligns month left and brand right', (
@@ -280,6 +427,7 @@ void main() {
 
     await tester.pumpWidget(
       BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 17),
         calendarStore: () async => rows,
         syncCalendar: () async {
           rows = [

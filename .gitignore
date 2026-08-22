@@ -37,6 +37,7 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example
+!**/.env.example
 coverage/
 test-results/
 playwright-report/

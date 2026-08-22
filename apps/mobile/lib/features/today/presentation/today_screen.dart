@@ -15,10 +15,18 @@ const _green = Color(0xFF087326);
 const _blue = Color(0xFF0C28D8);
 
 class TodayScreen extends StatelessWidget {
-  const TodayScreen({super.key, required this.monthTitle, required this.entry});
+  const TodayScreen({
+    super.key,
+    required this.monthTitle,
+    required this.entry,
+    this.showTodayButton = false,
+    this.onTodaySelected,
+  });
 
   final String monthTitle;
   final CalendarEntry entry;
+  final bool showTodayButton;
+  final VoidCallback? onTodaySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +34,11 @@ class TodayScreen extends StatelessWidget {
       backgroundColor: _parchment,
       body: Column(
         children: [
-          _TopHeader(monthTitle: monthTitle),
+          _TopHeader(
+            monthTitle: monthTitle,
+            showTodayButton: showTodayButton,
+            onTodaySelected: onTodaySelected,
+          ),
           Expanded(
             child: SingleChildScrollView(
               key: const ValueKey('today-scroll'),
@@ -49,9 +61,15 @@ class TodayScreen extends StatelessWidget {
 }
 
 class _TopHeader extends StatelessWidget {
-  const _TopHeader({required this.monthTitle});
+  const _TopHeader({
+    required this.monthTitle,
+    required this.showTodayButton,
+    required this.onTodaySelected,
+  });
 
   final String monthTitle;
+  final bool showTodayButton;
+  final VoidCallback? onTodaySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -72,45 +90,71 @@ class _TopHeader extends StatelessWidget {
         bottom: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 26, 16, 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                flex: 7,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    monthTitle,
-                    maxLines: 1,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: _gold,
-                      fontWeight: FontWeight.w800,
-                      height: 1,
-                      letterSpacing: 0,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    flex: 7,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        monthTitle,
+                        maxLines: 1,
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              color: _gold,
+                              fontWeight: FontWeight.w800,
+                              height: 1,
+                              letterSpacing: 0,
+                            ),
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 11,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        'Barom Kagyu',
+                        maxLines: 1,
+                        textAlign: TextAlign.end,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(
+                              color: _gold,
+                              fontFamily: 'serif',
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0,
+                            ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                flex: 11,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
+              if (showTodayButton) ...[
+                const SizedBox(height: 12),
+                Align(
                   alignment: Alignment.centerRight,
-                  child: Text(
-                    'Barom Kagyu',
-                    maxLines: 1,
-                    textAlign: TextAlign.end,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: _gold,
-                      fontFamily: 'serif',
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0,
+                  child: TextButton.icon(
+                    onPressed: onTodaySelected,
+                    icon: const Icon(Icons.today, size: 18),
+                    label: const Text('Today'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: const Color(0x33FFFFFF),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
