@@ -4,9 +4,26 @@ import '../../../l10n/app_localizations.dart';
 import '../domain/calendar_entry.dart';
 
 class MonthScreen extends StatelessWidget {
-  const MonthScreen({super.key, required this.month});
+  const MonthScreen({
+    super.key,
+    required this.month,
+    required this.selectedMonth,
+    required this.currentMonth,
+    this.onEntrySelected,
+    this.onPreviousMonth,
+    this.onNextMonth,
+    this.onMonthSelected,
+    this.onTodaySelected,
+  });
 
   final CalendarMonth month;
+  final DateTime selectedMonth;
+  final DateTime currentMonth;
+  final ValueChanged<CalendarEntry>? onEntrySelected;
+  final VoidCallback? onPreviousMonth;
+  final VoidCallback? onNextMonth;
+  final ValueChanged<int>? onMonthSelected;
+  final VoidCallback? onTodaySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +38,28 @@ class MonthScreen extends StatelessWidget {
           foregroundColor: Colors.white,
           title: Text(month.title),
           actions: [
+            IconButton(
+              tooltip: 'Previous month',
+              onPressed: onPreviousMonth,
+              icon: const Icon(Icons.chevron_left),
+            ),
+            IconButton(
+              tooltip: 'Next month',
+              onPressed: onNextMonth,
+              icon: const Icon(Icons.chevron_right),
+            ),
             Padding(
               padding: const EdgeInsets.only(right: 16),
-              child: Center(child: Text(localizations.today)),
+              child: Tooltip(
+                message: 'Open today',
+                child: TextButton(
+                  onPressed: onTodaySelected,
+                  child: Text(
+                    localizations.today,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
@@ -31,15 +67,130 @@ class MonthScreen extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
+              _MonthSelector(
+                selectedMonth: selectedMonth,
+                currentMonth: currentMonth,
+                onMonthSelected: onMonthSelected,
+              ),
+              const SizedBox(height: 12),
+              if (month.entries.isEmpty) ...[
+                const Text('No practice days for this month yet.'),
+                const SizedBox(height: 12),
+              ],
               const _WeekdayHeader(),
               const SizedBox(height: 8),
-              _MonthGrid(month: month),
+              _MonthGrid(month: month, onEntrySelected: onEntrySelected),
               const SizedBox(height: 16),
               _EventList(entries: month.entries),
             ]),
           ),
         ),
       ],
+    );
+  }
+}
+
+class _MonthSelector extends StatelessWidget {
+  const _MonthSelector({
+    required this.selectedMonth,
+    required this.currentMonth,
+    required this.onMonthSelected,
+  });
+
+  final DateTime selectedMonth;
+  final DateTime currentMonth;
+  final ValueChanged<int>? onMonthSelected;
+
+  static const _labels = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final visibleMonths = [
+      for (var offset = -3; offset < 3; offset++)
+        DateTime(selectedMonth.year, selectedMonth.month + offset),
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          for (final visibleMonth in visibleMonths) ...[
+            _MonthChip(
+              month: visibleMonth.month,
+              label: _labels[visibleMonth.month - 1],
+              selectedMonth: selectedMonth,
+              currentMonth: currentMonth,
+              onMonthSelected: onMonthSelected,
+            ),
+            if (visibleMonth != visibleMonths.last) const SizedBox(width: 6),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MonthChip extends StatelessWidget {
+  const _MonthChip({
+    required this.month,
+    required this.label,
+    required this.selectedMonth,
+    required this.currentMonth,
+    required this.onMonthSelected,
+  });
+
+  final int month;
+  final String label;
+  final DateTime selectedMonth;
+  final DateTime currentMonth;
+  final ValueChanged<int>? onMonthSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = selectedMonth.month == month;
+    final isCurrent =
+        currentMonth.year == selectedMonth.year && currentMonth.month == month;
+    final chip = ChoiceChip(
+      key: ValueKey('month-chip-$month'),
+      label: Text(label),
+      selected: isSelected,
+      selectedColor: const Color(0xFF9B0F2E),
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : const Color(0xFF3A1717),
+        fontWeight: isCurrent || isSelected ? FontWeight.w800 : FontWeight.w600,
+      ),
+      side: BorderSide(
+        color: isCurrent ? const Color(0xFF9B0F2E) : const Color(0xFFE0C16F),
+        width: isCurrent ? 2 : 1,
+      ),
+      onSelected: (_) => onMonthSelected?.call(month),
+    );
+
+    Widget keyedChip = KeyedSubtree(
+      key: isSelected
+          ? ValueKey('month-chip-selected-$month')
+          : ValueKey('month-chip-unselected-$month'),
+      child: chip,
+    );
+
+    if (!isCurrent) return keyedChip;
+
+    return KeyedSubtree(
+      key: ValueKey('month-chip-current-$month'),
+      child: keyedChip,
     );
   }
 }
@@ -71,9 +222,10 @@ class _WeekdayHeader extends StatelessWidget {
 }
 
 class _MonthGrid extends StatelessWidget {
-  const _MonthGrid({required this.month});
+  const _MonthGrid({required this.month, required this.onEntrySelected});
 
   final CalendarMonth month;
+  final ValueChanged<CalendarEntry>? onEntrySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +251,7 @@ class _MonthGrid extends StatelessWidget {
           day: day,
           entry: entry,
           isToday: day == month.today.day,
+          onTap: entry == null ? null : () => onEntrySelected?.call(entry),
         );
       },
     );
@@ -111,11 +264,13 @@ class CalendarDayCell extends StatelessWidget {
     required this.day,
     required this.entry,
     required this.isToday,
+    this.onTap,
   });
 
   final int day;
   final CalendarEntry? entry;
   final bool isToday;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -127,40 +282,45 @@ class CalendarDayCell extends StatelessWidget {
     final foreground = isToday ? Colors.white : const Color(0xFF3A1717);
 
     return Semantics(
+      button: onTap != null,
       label: 'Day $day${entry == null ? '' : ', ${entry!.titleEn}'}',
-      child: Container(
-        margin: const EdgeInsets.all(2),
-        padding: const EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: const Color(0xFFE0C16F)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '$day',
-              style: TextStyle(
-                color: foreground,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 2),
-            if (entry != null)
-              Expanded(
-                child: Text(
-                  entry!.titleEn,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: foreground,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.all(2),
+          padding: const EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: const Color(0xFFE0C16F)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '$day',
+                style: TextStyle(
+                  color: foreground,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
-          ],
+              const SizedBox(height: 2),
+              if (entry != null)
+                Expanded(
+                  child: Text(
+                    entry!.titleEn,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: foreground,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -179,9 +339,8 @@ class _EventList extends StatelessWidget {
       children: [
         Text(
           'Practice days',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: const Color(0xFF8B0E2F),
-          ),
+          style: Theme.of(context).textTheme.titleLarge
+              ?.copyWith(color: const Color(0xFF8B0E2F)),
         ),
         const SizedBox(height: 8),
         for (final entry in entries)

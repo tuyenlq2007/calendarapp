@@ -6,6 +6,7 @@ import 'app.dart';
 import 'core/network/supabase_calendar_feed.dart';
 import 'features/calendar/data/calendar_sync_service.dart';
 import 'features/calendar/data/shared_preferences_calendar_store.dart';
+import 'features/teachings/data/shared_preferences_teaching_store.dart';
 
 const _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
 const _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
@@ -14,6 +15,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final store = SharedPreferencesCalendarStore(SharedPreferencesAsync());
+  final teachingStore = SharedPreferencesTeachingStore(
+    SharedPreferencesAsync(),
+  );
   CalendarSyncService? syncService;
 
   if (_supabaseUrl.isNotEmpty && _supabaseAnonKey.isNotEmpty) {
@@ -30,6 +34,7 @@ Future<void> main() async {
   runApp(
     BaromKagyuCalendarApp(
       calendarStore: store.publishedEntries,
+      teachingContentStore: teachingStore.publishedContent,
       initialLastSyncedAt: await store.lastSyncedAt(),
       syncCalendar: syncService == null
           ? null

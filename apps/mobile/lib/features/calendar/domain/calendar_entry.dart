@@ -27,6 +27,8 @@ class CalendarEntry {
 class CalendarMonth {
   const CalendarMonth({
     required this.title,
+    required this.year,
+    required this.month,
     required this.today,
     required this.entries,
     required this.daysInMonth,
@@ -34,6 +36,8 @@ class CalendarMonth {
   });
 
   final String title;
+  final int year;
+  final int month;
   final CalendarEntry today;
   final List<CalendarEntry> entries;
   final int daysInMonth;
@@ -64,15 +68,42 @@ CalendarMonth calendarMonthFromFeedRows(List<CalendarFeedRow> rows) {
   final activeRows = rows.where((row) => !row.isWithdrawn).toList();
   if (activeRows.isEmpty) return sampleCalendarEntries;
 
-  final entries = [for (final row in activeRows) calendarEntryFromFeedRow(row)];
   final firstDate = activeRows.first.gregorianDate;
+  return calendarMonthFromFeedRowsForMonth(rows, firstDate);
+}
+
+CalendarMonth calendarMonthFromFeedRowsForMonth(
+  List<CalendarFeedRow> rows,
+  DateTime visibleMonth,
+) {
+  final monthStart = DateTime(visibleMonth.year, visibleMonth.month);
+  final activeRows = rows.where((row) {
+    final date = row.gregorianDate;
+    return !row.isWithdrawn &&
+        date.year == monthStart.year &&
+        date.month == monthStart.month;
+  }).toList();
+
+  final entries = [for (final row in activeRows) calendarEntryFromFeedRow(row)];
+  final daysInMonth = DateTime(monthStart.year, monthStart.month + 1, 0).day;
 
   return CalendarMonth(
-    title: '${firstDate.monthName} ${firstDate.year}',
-    today: entries.first,
+    title: '${monthStart.monthName} ${monthStart.year}',
+    year: monthStart.year,
+    month: monthStart.month,
+    today: entries.firstOrNull ??
+        CalendarEntry(
+          day: 1,
+          weekday: monthStart.weekdayName,
+          tibetanDateText: '',
+          titleEn: 'No practice day selected',
+          titleBo: '',
+          descriptionEn: 'No practice days for this month yet.',
+          lunarDay: 1,
+        ),
     entries: entries,
-    daysInMonth: DateTime(firstDate.year, firstDate.month + 1, 0).day,
-    firstWeekdayOffset: DateTime(firstDate.year, firstDate.month).weekday - 1,
+    daysInMonth: daysInMonth,
+    firstWeekdayOffset: monthStart.weekday - 1,
   );
 }
 
@@ -111,6 +142,8 @@ extension on DateTime {
 
 const sampleCalendarEntries = CalendarMonth(
   title: 'February 2021',
+  year: 2021,
+  month: 2,
   daysInMonth: 28,
   firstWeekdayOffset: 0,
   today: CalendarEntry(
@@ -119,7 +152,7 @@ const sampleCalendarEntries = CalendarMonth(
     tibetanDateText: 'བོད་ཟླ ༡༠ ཚེས ༡༠',
     titleEn: 'Guru Rinpoche day',
     titleBo: 'གུ་རུ་རིན་པོ་ཆེའི་དུས་ཆེན།',
-    descriptionEn: 'Bad day for hanging prayer flags. Birthday of the present Gyalwang Drukpa and Guru Padmasambhava manifestations.',
+    descriptionEn: 'Bad day for hanging prayer flags. Birthday of Guru Padmasambhava manifestations.',
     lunarDay: 10,
     isHighlighted: true,
     isDharmicDay: true,
@@ -161,7 +194,7 @@ const sampleCalendarEntries = CalendarMonth(
       tibetanDateText: 'བོད་ཟླ ༡༠ ཚེས ༡༠',
       titleEn: 'Guru Rinpoche day',
       titleBo: 'གུ་རུ་རིན་པོ་ཆེའི་དུས་ཆེན།',
-      descriptionEn: 'Bad day for hanging prayer flags. Birthday of the present Gyalwang Drukpa and Guru Padmasambhava manifestations.',
+      descriptionEn: 'Bad day for hanging prayer flags. Birthday of Guru Padmasambhava manifestations.',
       lunarDay: 10,
       isHighlighted: true,
       isDharmicDay: true,
