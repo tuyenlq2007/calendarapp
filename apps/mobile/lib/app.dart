@@ -15,6 +15,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
   const BaromKagyuCalendarApp({
     super.key,
     this.locale,
+    this.currentDate,
     this.calendarStore,
     this.syncCalendar,
     this.initialLastSyncedAt,
@@ -22,6 +23,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
   });
 
   final Locale? locale;
+  final DateTime? currentDate;
   final Future<List<CalendarFeedRow>> Function()? calendarStore;
   final Future<DateTime> Function()? syncCalendar;
   final DateTime? initialLastSyncedAt;
@@ -42,6 +44,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
         syncCalendar: syncCalendar,
         initialLastSyncedAt: initialLastSyncedAt,
         teachingContentStore: teachingContentStore,
+        currentDate: currentDate,
       ),
     );
   }
@@ -69,12 +72,14 @@ class CalendarHomeScreen extends StatefulWidget {
     this.syncCalendar,
     this.initialLastSyncedAt,
     this.teachingContentStore,
+    this.currentDate,
   });
 
   final Future<List<CalendarFeedRow>> Function()? calendarStore;
   final Future<DateTime> Function()? syncCalendar;
   final DateTime? initialLastSyncedAt;
   final Future<List<TeachingContentRow>> Function()? teachingContentStore;
+  final DateTime? currentDate;
 
   @override
   State<CalendarHomeScreen> createState() => _CalendarHomeScreenState();
@@ -88,7 +93,11 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   };
   DateTime? _lastSyncedAt;
   bool _isSyncing = false;
-  CalendarMonth _calendarMonth = sampleCalendarEntries;
+  DateTime _selectedMonth = DateTime(
+    sampleCalendarEntries.year,
+    sampleCalendarEntries.month,
+  );
+  List<CalendarFeedRow> _calendarRows = const [];
   CalendarEntry? _selectedCalendarEntry;
   List<TeachingContentRow> _teachingContent = sampleTeachingContent;
   Set<String> _savedTeachingIds = const {};
@@ -104,12 +113,26 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
+    final calendarMonth = _visibleCalendarMonth();
+    final currentDate = _currentDateForDisplay();
+    final isViewingSelectedDay = _isViewingSelectedDay(currentDate);
     final screens = [
       TodayScreen(
-        monthTitle: _calendarMonth.title,
-        entry: _selectedCalendarEntry ?? _calendarMonth.today,
+        monthTitle: '${_monthName(currentDate.month)} ${currentDate.year}',
+        entry: _selectedCalendarEntry ?? _currentDayEntry(),
+        showTodayButton: isViewingSelectedDay,
+        onTodaySelected: _selectToday,
       ),
-      MonthScreen(month: _calendarMonth, onEntrySelected: _selectCalendarEntry),
+      MonthScreen(
+        month: calendarMonth,
+        selectedMonth: _selectedMonth,
+        currentMonth: DateTime(currentDate.year, currentDate.month),
+        onEntrySelected: _selectCalendarEntry,
+        onPreviousMonth: _selectPreviousMonth,
+        onNextMonth: _selectNextMonth,
+        onMonthSelected: _selectMonthOfYear,
+        onTodaySelected: _selectToday,
+      ),
       TeachingsScreen(
         items: _teachingContent,
         savedIds: _savedTeachingIds,
@@ -141,9 +164,6 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
             selectedIndex: _selectedIndex,
             onDestinationSelected: (index) {
               setState(() {
-                if (index == 0) {
-                  _selectedCalendarEntry = null;
-                }
                 _selectedIndex = index;
               });
             },
@@ -151,7 +171,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
               NavigationDestination(
                 icon: const Icon(Icons.today_outlined),
                 selectedIcon: const Icon(Icons.today),
-                label: localizations.today,
+                label: isViewingSelectedDay ? 'Day' : localizations.today,
               ),
               NavigationDestination(
                 icon: const Icon(Icons.calendar_month_outlined),
@@ -187,7 +207,9 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
         _isSyncing = false;
       });
       await _loadStoredCalendar();
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Calendar sync failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
       setState(() => _isSyncing = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -203,7 +225,11 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     final rows = await calendarStore();
     if (!mounted) return;
     setState(() {
-      _calendarMonth = calendarMonthFromFeedRows(rows);
+      _calendarRows = rows;
+      if (rows.isNotEmpty) {
+        final firstDate = rows.first.gregorianDate;
+        _selectedMonth = DateTime(firstDate.year, firstDate.month);
+      }
       _selectedCalendarEntry = null;
     });
   }
@@ -235,5 +261,135 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
       _selectedCalendarEntry = entry;
       _selectedIndex = 0;
     });
+  }
+
+  bool _isViewingSelectedDay(DateTime currentDate) {
+    final selectedEntry = _selectedCalendarEntry;
+    if (selectedEntry == null) return false;
+
+    return _selectedMonth.year != currentDate.year ||
+        _selectedMonth.month != currentDate.month ||
+        selectedEntry.day != currentDate.day;
+  }
+
+  DateTime _currentDate() {
+    final now = widget.currentDate ?? DateTime.now();
+    return DateTime(now.year, now.month, now.day);
+  }
+
+  DateTime _currentDateForDisplay() {
+    if (widget.currentDate == null && _calendarRows.isEmpty) {
+      return DateTime(
+        sampleCalendarEntries.year,
+        sampleCalendarEntries.month,
+        sampleCalendarEntries.today.day,
+      );
+    }
+
+    return _currentDate();
+  }
+
+  CalendarEntry _currentDayEntry() {
+    final currentDate = _currentDateForDisplay();
+    for (final row in _calendarRows) {
+      final date = row.gregorianDate;
+      if (!row.isWithdrawn &&
+          date.year == currentDate.year &&
+          date.month == currentDate.month &&
+          date.day == currentDate.day) {
+        return calendarEntryFromFeedRow(row);
+      }
+    }
+
+    if (_calendarRows.isEmpty &&
+        currentDate.year == sampleCalendarEntries.year &&
+        currentDate.month == sampleCalendarEntries.month &&
+        currentDate.day == sampleCalendarEntries.today.day) {
+      return sampleCalendarEntries.today;
+    }
+
+    return CalendarEntry(
+      day: currentDate.day,
+      weekday: _weekdayName(currentDate.weekday),
+      tibetanDateText: '',
+      titleEn: 'No practice day selected',
+      titleBo: '',
+      descriptionEn: 'No practice days for this day yet.',
+      lunarDay: currentDate.day,
+    );
+  }
+
+  CalendarMonth _visibleCalendarMonth() {
+    if (_calendarRows.isEmpty) {
+      if (_selectedMonth.year == sampleCalendarEntries.year &&
+          _selectedMonth.month == sampleCalendarEntries.month) {
+        return sampleCalendarEntries;
+      }
+
+      return calendarMonthFromFeedRowsForMonth(const [], _selectedMonth);
+    }
+
+    return calendarMonthFromFeedRowsForMonth(_calendarRows, _selectedMonth);
+  }
+
+  void _selectPreviousMonth() {
+    setState(() {
+      _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
+      _selectedCalendarEntry = null;
+    });
+  }
+
+  void _selectNextMonth() {
+    setState(() {
+      _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
+      _selectedCalendarEntry = null;
+    });
+  }
+
+  void _selectMonthOfYear(int month) {
+    setState(() {
+      _selectedMonth = DateTime(_selectedMonth.year, month);
+      _selectedCalendarEntry = null;
+    });
+  }
+
+  void _selectToday() {
+    final currentDate = _currentDateForDisplay();
+    setState(() {
+      _selectedMonth = DateTime(currentDate.year, currentDate.month);
+      _selectedCalendarEntry = null;
+      _selectedIndex = 0;
+    });
+  }
+
+  String _monthName(int month) {
+    return switch (month) {
+      DateTime.january => 'January',
+      DateTime.february => 'February',
+      DateTime.march => 'March',
+      DateTime.april => 'April',
+      DateTime.may => 'May',
+      DateTime.june => 'June',
+      DateTime.july => 'July',
+      DateTime.august => 'August',
+      DateTime.september => 'September',
+      DateTime.october => 'October',
+      DateTime.november => 'November',
+      DateTime.december => 'December',
+      _ => '',
+    };
+  }
+
+  String _weekdayName(int weekday) {
+    return switch (weekday) {
+      DateTime.monday => 'Monday',
+      DateTime.tuesday => 'Tuesday',
+      DateTime.wednesday => 'Wednesday',
+      DateTime.thursday => 'Thursday',
+      DateTime.friday => 'Friday',
+      DateTime.saturday => 'Saturday',
+      DateTime.sunday => 'Sunday',
+      _ => '',
+    };
   }
 }
