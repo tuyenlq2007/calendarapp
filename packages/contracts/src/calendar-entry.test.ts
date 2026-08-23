@@ -10,6 +10,8 @@ const validCalendarEntry = {
   titleBo: "མཁའ་འགྲོ་མའི་དུས་ཆེན།",
   descriptionEn: "Practice day",
   descriptionBo: "སྒྲུབ་པའི་ཉིན།",
+  elementTibetanLine:
+    "ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།",
   status: "published",
   version: 1,
 };
@@ -31,5 +33,16 @@ describe("CalendarEntrySchema", () => {
     });
 
     expect(result.success).toBe(false);
+  });
+
+  test("accepts an element Tibetan line for daily element content", () => {
+    const result = CalendarEntrySchema.safeParse(validCalendarEntry);
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.elementTibetanLine).toBe(
+        "ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།",
+      );
+    }
   });
 });

@@ -99,6 +99,7 @@ class SharedPreferencesCalendarStore implements CalendarStore {
           'title_bo': row.titleBo,
           'description_en': row.descriptionEn,
           'description_bo': row.descriptionBo,
+          'element_tibetan_line': row.elementTibetanLine,
           'status': row.status,
         }),
     ]);

@@ -47,7 +47,7 @@ class TodayScreen extends StatelessWidget {
                 children: [
                   _SelectedDayPanel(entry: entry),
                   const SizedBox(height: 10),
-                  const _ElementPanel(),
+                  _ElementPanel(entry: entry),
                   const SizedBox(height: 10),
                   _TibetanDateDetails(entry: entry),
                 ],
@@ -300,7 +300,9 @@ class _SacredSymbol extends StatelessWidget {
 }
 
 class _ElementPanel extends StatelessWidget {
-  const _ElementPanel();
+  const _ElementPanel({required this.entry});
+
+  final CalendarEntry entry;
 
   @override
   Widget build(BuildContext context) {
@@ -308,6 +310,19 @@ class _ElementPanel extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 22),
       child: Column(
         children: [
+          if (entry.elementTibetanLine.trim().isNotEmpty) ...[
+            Text(
+              entry.elementTibetanLine,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: _textDark,
+                fontWeight: FontWeight.w800,
+                height: 1.18,
+                letterSpacing: 0,
+              ),
+            ),
+            const SizedBox(height: 10),
+          ],
           Text(
             'Water - Wind',
             textAlign: TextAlign.center,

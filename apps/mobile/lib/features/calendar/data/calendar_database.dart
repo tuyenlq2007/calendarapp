@@ -42,6 +42,7 @@ class CalendarFeedRow implements CalendarFeedEntry {
     required this.titleBo,
     required this.descriptionEn,
     required this.descriptionBo,
+    this.elementTibetanLine = '',
     required this.status,
   });
 
@@ -55,6 +56,7 @@ class CalendarFeedRow implements CalendarFeedEntry {
       titleBo: _string(json, 'title_bo'),
       descriptionEn: _string(json, 'description_en'),
       descriptionBo: _string(json, 'description_bo'),
+      elementTibetanLine: _optionalString(json, 'element_tibetan_line'),
       status: _string(json, 'status'),
     );
   }
@@ -71,6 +73,7 @@ class CalendarFeedRow implements CalendarFeedEntry {
   final String titleBo;
   final String descriptionEn;
   final String descriptionBo;
+  final String elementTibetanLine;
   final String status;
 
   bool get isWithdrawn => status == 'archived';
@@ -104,10 +107,34 @@ class CalendarFeedRow implements CalendarFeedEntry {
     throw FormatException('calendar feed row field $key must be a string');
   }
 
+  static String _optionalString(Map<String, Object?> json, String key) {
+    final value = json[key];
+    if (value == null) return '';
+    if (value is String) return value;
+    throw FormatException('calendar feed row field $key must be a string');
+  }
+
   static int _integer(Map<String, Object?> json, String key) {
     final value = json[key];
     if (value is int) return value;
     if (value is num && value == value.toInt()) return value.toInt();
     throw FormatException('calendar feed row field $key must be an integer');
+  }
+
+  CalendarFeedRow copyWith({
+    String? elementTibetanLine,
+  }) {
+    return CalendarFeedRow(
+      id: id,
+      version: version,
+      gregorianDate: gregorianDate,
+      tibetanDateText: tibetanDateText,
+      titleEn: titleEn,
+      titleBo: titleBo,
+      descriptionEn: descriptionEn,
+      descriptionBo: descriptionBo,
+      elementTibetanLine: elementTibetanLine ?? this.elementTibetanLine,
+      status: status,
+    );
   }
 }
