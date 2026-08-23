@@ -57,6 +57,25 @@ void main() {
     final restartedStore = SharedPreferencesCalendarStore(preferences);
     expect(await restartedStore.lastSyncedAt(), lastSyncedAt);
   });
+
+  test('persists the element Tibetan line for published rows', () async {
+    final preferences = SharedPreferencesAsync();
+    final store = SharedPreferencesCalendarStore(preferences);
+
+    await store.upsertOrWithdraw(
+      row('entry', status: 'published').copyWith(
+        elementTibetanLine:
+            'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
+      ),
+    );
+
+    final restartedStore = SharedPreferencesCalendarStore(preferences);
+
+    expect(
+      (await restartedStore.publishedEntries()).single.elementTibetanLine,
+      'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
+    );
+  });
 }
 
 CalendarFeedRow row(String id, {required String status}) {

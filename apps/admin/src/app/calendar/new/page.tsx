@@ -15,6 +15,7 @@ const emptyEntry: CalendarDraft = {
   titleBo: "",
   descriptionEn: "",
   descriptionBo: "",
+  elementTibetanLine: "",
   status: "draft",
 };
 

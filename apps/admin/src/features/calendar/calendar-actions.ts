@@ -20,6 +20,7 @@ export type CalendarDraft = {
   titleBo: string;
   descriptionEn: string;
   descriptionBo: string;
+  elementTibetanLine: string;
   status: CalendarStatus;
 };
 
@@ -160,6 +161,7 @@ export async function saveCalendarEntry(
     titleBo: input.titleBo,
     descriptionEn: input.descriptionEn,
     descriptionBo: input.descriptionBo,
+    elementTibetanLine: input.elementTibetanLine,
   });
 
   if (input.intent === "review") {
@@ -214,6 +216,7 @@ export async function createCalendarRepository(): Promise<CalendarRepository> {
         title_bo: input.titleBo,
         description_en: input.descriptionEn,
         description_bo: input.descriptionBo,
+        element_tibetan_line: input.elementTibetanLine,
         status: "draft" as const,
       };
 
@@ -268,7 +271,7 @@ export async function createCalendarRepository(): Promise<CalendarRepository> {
       const { data, error } = await supabase
         .from("calendar_entries")
         .select(
-          "id, gregorian_date, tibetan_date_text, title_en, title_bo, description_en, description_bo, status",
+          "id, gregorian_date, tibetan_date_text, title_en, title_bo, description_en, description_bo, element_tibetan_line, status",
         )
         .order("gregorian_date", { ascending: true });
 
@@ -282,6 +285,7 @@ export async function createCalendarRepository(): Promise<CalendarRepository> {
         titleBo: row.title_bo as string,
         descriptionEn: row.description_en as string,
         descriptionBo: row.description_bo as string,
+        elementTibetanLine: row.element_tibetan_line as string,
         status: row.status as CalendarStatus,
       }));
     },
@@ -301,6 +305,7 @@ export async function saveCalendarDraft(formData: FormData) {
     titleBo: stringField(formData, "titleBo"),
     descriptionEn: stringField(formData, "descriptionEn"),
     descriptionBo: stringField(formData, "descriptionBo"),
+    elementTibetanLine: stringField(formData, "elementTibetanLine"),
     intent,
   });
 

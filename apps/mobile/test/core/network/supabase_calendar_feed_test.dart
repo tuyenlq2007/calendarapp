@@ -14,6 +14,8 @@ void main() {
         'title_bo': 'དུས་ཆེན།',
         'description_en': 'Practice day',
         'description_bo': 'ཉམས་ལེན།',
+        'element_tibetan_line':
+            'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
         'status': 'published',
       },
       {
@@ -25,6 +27,7 @@ void main() {
         'title_bo': '',
         'description_en': '',
         'description_bo': '',
+        'element_tibetan_line': '',
         'status': 'archived',
       },
     ]);
@@ -35,6 +38,10 @@ void main() {
     expect(
       (page.entries.first as CalendarFeedRow).titleEn,
       'Guru Rinpoche day',
+    );
+    expect(
+      (page.entries.first as CalendarFeedRow).elementTibetanLine,
+      'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
     );
     expect((page.entries.last as CalendarFeedRow).isWithdrawn, isTrue);
   });

@@ -46,6 +46,8 @@ describe("calendar entry form", () => {
           titleBo: "དུས་ཆེན།",
           descriptionEn: "Daily practice",
           descriptionBo: "ཉིན་རེའི་ཉམས་ལེན།",
+          elementTibetanLine:
+            "ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།",
           status: "draft",
         },
       }),
@@ -55,6 +57,7 @@ describe("calendar entry form", () => {
     expect(markup).toContain('name="tibetanDateText"');
     expect(markup).toContain('name="titleEn"');
     expect(markup).toContain('name="titleBo"');
+    expect(markup).toContain('name="elementTibetanLine"');
     expect(markup).toContain('value="draft"');
     expect(markup).toContain('value="review"');
   });
@@ -68,6 +71,7 @@ describe("calendar entry form", () => {
       titleBo: "དུས་ཆེན།",
       descriptionEn: "Daily practice",
       descriptionBo: "ཉིན་རེའི་ཉམས་ལེན།",
+      elementTibetanLine: "",
       status: "review" as const,
     };
 

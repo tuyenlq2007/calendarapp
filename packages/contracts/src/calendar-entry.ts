@@ -33,6 +33,7 @@ export const CalendarEntrySchema = z.object({
   titleBo: z.string().trim().min(1),
   descriptionEn: z.string(),
   descriptionBo: z.string(),
+  elementTibetanLine: z.string(),
   status: PublicationStatusSchema,
   version: z.number().int().positive(),
 });

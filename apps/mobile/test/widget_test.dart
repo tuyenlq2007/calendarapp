@@ -50,6 +50,40 @@ void main() {
     expect(find.text('Calendar'), findsOneWidget);
   });
 
+  testWidgets('today screen renders the database-backed element Tibetan line', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 24),
+        calendarStore: () async => [
+          CalendarFeedRow(
+            id: 'element-entry',
+            version: 1,
+            gregorianDate: DateTime(2026, 8, 24),
+            tibetanDateText: '10th lunar day',
+            titleEn: 'Element Practice',
+            titleBo: 'དུས་ཆེན།',
+            descriptionEn: 'Good day for practice.',
+            descriptionBo: '',
+            elementTibetanLine:
+                'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
+            status: 'published',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets(
     'month tab shows a seven column calendar grid with practice days',
     (WidgetTester tester) async {

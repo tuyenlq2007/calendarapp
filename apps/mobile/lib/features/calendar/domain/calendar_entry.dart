@@ -8,6 +8,7 @@ class CalendarEntry {
     required this.titleEn,
     required this.titleBo,
     required this.descriptionEn,
+    this.elementTibetanLine = '',
     required this.lunarDay,
     this.isHighlighted = false,
     this.isDharmicDay = false,
@@ -19,6 +20,7 @@ class CalendarEntry {
   final String titleEn;
   final String titleBo;
   final String descriptionEn;
+  final String elementTibetanLine;
   final int lunarDay;
   final bool isHighlighted;
   final bool isDharmicDay;
@@ -59,6 +61,7 @@ CalendarEntry calendarEntryFromFeedRow(CalendarFeedRow row) {
     titleEn: row.titleEn,
     titleBo: row.titleBo,
     descriptionEn: row.descriptionEn,
+    elementTibetanLine: row.elementTibetanLine,
     lunarDay: row.gregorianDate.day,
     isDharmicDay: true,
   );
