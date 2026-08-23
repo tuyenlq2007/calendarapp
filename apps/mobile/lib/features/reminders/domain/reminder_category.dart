@@ -1,4 +1,10 @@
-enum ReminderCategory { dailyPractice, holyDays, calendarEvents, teachings, news }
+enum ReminderCategory {
+  dailyPractice,
+  holyDays,
+  calendarEvents,
+  teachings,
+  news,
+}
 
 extension ReminderCategoryKey on ReminderCategory {
   String get storageKey {

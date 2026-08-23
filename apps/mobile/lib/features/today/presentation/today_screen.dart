@@ -209,17 +209,6 @@ class _SelectedDayPanel extends StatelessWidget {
             entry.descriptionEn,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: _textDark,
-              fontWeight: FontWeight.w800,
-              height: 1.14,
-              letterSpacing: 0,
-            ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            'We are the heirs of our own actions\n~ The Buddha ~',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: _green,
               fontStyle: FontStyle.italic,
               fontWeight: FontWeight.w800,
@@ -306,6 +295,16 @@ class _ElementPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final elementPair = entry.elementPairEn.trim().isEmpty
+        ? 'Water - Wind'
+        : entry.elementPairEn;
+    final elementTitle = entry.elementCombinationTitleEn.trim().isEmpty
+        ? 'Negative Elemental Combination'
+        : entry.elementCombinationTitleEn;
+    final elementDescription = entry.elementDescriptionEn.trim().isEmpty
+        ? "This negative elemental combination will cause disharmony among one's loved ones"
+        : entry.elementDescriptionEn;
+
     return _ReferencePanel(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 22),
       child: Column(
@@ -324,7 +323,7 @@ class _ElementPanel extends StatelessWidget {
             const SizedBox(height: 10),
           ],
           Text(
-            'Water - Wind',
+            elementPair,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: _textDark,
@@ -334,7 +333,7 @@ class _ElementPanel extends StatelessWidget {
             ),
           ),
           Text(
-            'Negative Elemental Combination',
+            elementTitle,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: _blue,
@@ -345,7 +344,7 @@ class _ElementPanel extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            "This negative elemental combination will cause disharmony among one's loved ones",
+            elementDescription,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: _textDark,
@@ -367,6 +366,22 @@ class _TibetanDateDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dateSubtitle = entry.elementPairEn.trim().isEmpty
+        ? entry.tibetanDateText
+        : entry.elementPairEn;
+    final monthValue = entry.monthNumberText.trim().isEmpty
+        ? '7'
+        : entry.monthNumberText;
+    final monthSubtitle = entry.monthElementAnimalEn.trim().isEmpty
+        ? 'Fire Dog'
+        : entry.monthElementAnimalEn;
+    final yearValue = entry.yearNumberText.trim().isEmpty
+        ? '2153'
+        : entry.yearNumberText;
+    final yearSubtitle = entry.yearElementAnimalEn.trim().isEmpty
+        ? 'Fire Horse'
+        : entry.yearElementAnimalEn;
+
     return _ReferencePanel(
       padding: EdgeInsets.zero,
       child: IntrinsicHeight(
@@ -377,23 +392,23 @@ class _TibetanDateDetails extends StatelessWidget {
               child: _MetaCell(
                 label: 'Date',
                 value: '${entry.lunarDay}',
-                subtitle: entry.tibetanDateText,
+                subtitle: dateSubtitle,
               ),
             ),
             const _MetaDivider(),
-            const Expanded(
+            Expanded(
               child: _MetaCell(
                 label: 'Month',
-                value: '7',
-                subtitle: 'Fire Dog',
+                value: monthValue,
+                subtitle: monthSubtitle,
               ),
             ),
             const _MetaDivider(),
-            const Expanded(
+            Expanded(
               child: _MetaCell(
                 label: 'Year',
-                value: '2153',
-                subtitle: 'Fire Horse',
+                value: yearValue,
+                subtitle: yearSubtitle,
               ),
             ),
           ],

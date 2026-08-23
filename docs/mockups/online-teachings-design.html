@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Online Teachings</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f7edd0;
+      color: #111;
+    }
+
+    .screen {
+      max-width: 430px;
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 18px 16px 28px;
+      background: #fff8e5;
+    }
+
+    .page-title {
+      margin: 0 0 16px;
+      color: #9b141b;
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .teaching-card {
+      margin-bottom: 14px;
+      padding: 20px 18px 18px;
+      background: #fff;
+      border: 1px solid #eadcae;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(70, 35, 10, 0.08);
+    }
+
+    .title {
+      margin: 0 0 24px;
+      color: #9b141b;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .practice {
+      margin: 0 0 22px;
+      font-size: 21px;
+      font-weight: 500;
+      line-height: 1.65;
+    }
+
+    .practice strong {
+      color: #9b141b;
+      font-weight: 800;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 26px;
+    }
+
+    .date-range {
+      color: #d40000;
+      font-size: 22px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status {
+      padding: 8px 15px;
+      border-radius: 999px;
+      font-size: 20px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status.ongoing {
+      color: #079321;
+      background: #e9faeb;
+      border: 2px solid #71df7b;
+    }
+
+    .status.upcoming {
+      color: #2459a6;
+      background: #eaf2ff;
+      border: 2px solid #9abdf5;
+    }
+
+    .status.finished {
+      color: #666;
+      background: #eeeeee;
+      border: 2px solid #cfcfcf;
+    }
+
+    .join-button {
+      display: block;
+      width: 78%;
+      margin: 0 auto;
+      padding: 16px 18px;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 900;
+      text-align: center;
+      text-decoration: none;
+      background: #e60000;
+      border-radius: 999px;
+    }
+
+    .join-button.disabled {
+      background: #a9a9a9;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <main class="screen">
+    <h1 class="page-title">Online Teachings</h1>
+
+    <section class="teaching-card">
+      <h1 class="title">Prayer for the Long Life of His Holiness</h1>
+
+      <p class="practice">
+        <strong>Practice:</strong>
+        Recite the Sutra of Boundless Life and Wisdom
+      </p>
+
+      <div class="meta-row">
+        <div class="date-range">06/07 - 31/12/2026</div>
+        <div class="status ongoing">Ongoing</div>
+      </div>
+
+      <a
+        class="join-button"
+        href="https://us02web.zoom.us/j/9461447283?pwd=ck01U3B1ZERFd1R1d0FNOERGNzJoQT09"
+      >
+        JOIN NOW
+      </a>
+    </section>
+
+    <section class="teaching-card">
+      <h1 class="title">Medicine Buddha Practice</h1>
+
+      <p class="practice">
+        <strong>Practice:</strong>
+        Daily Medicine Buddha mantra recitation and dedication
+      </p>
+
+      <div class="meta-row">
+        <div class="date-range">01/09 - 30/09/2026</div>
+        <div class="status upcoming">Upcoming</div>
+      </div>
+
+      <a
+        class="join-button disabled"
+        href="https://us02web.zoom.us/j/9461447283?pwd=ck01U3B1ZERFd1R1d0FNOERGNzJoQT09"
+      >
+        JOIN NOW
+      </a>
+    </section>
+
+    <section class="teaching-card">
+      <h1 class="title">Guru Rinpoche Tsok Practice</h1>
+
+      <p class="practice">
+        <strong>Practice:</strong>
+        Monthly Guru Rinpoche prayers, tsok, and aspiration practice
+      </p>
+
+      <div class="meta-row">
+        <div class="date-range">10/06 - 10/08/2026</div>
+        <div class="status finished">Finished</div>
+      </div>
+
+      <a
+        class="join-button disabled"
+        href="https://us02web.zoom.us/j/9461447283?pwd=ck01U3B1ZERFd1R1d0FNOERGNzJoQT09"
+      >
+        JOIN NOW
+      </a>
+    </section>
+  </main>
+</body>
+</html>

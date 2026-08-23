@@ -64,8 +64,7 @@ void main() {
 
     await store.upsertOrWithdraw(
       row('entry', status: 'published').copyWith(
-        elementTibetanLine:
-            'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
+        elementTibetanLine: 'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
       ),
     );
 
@@ -75,6 +74,54 @@ void main() {
       (await restartedStore.publishedEntries()).single.elementTibetanLine,
       'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
     );
+  });
+  test('persists the English element fields for published rows', () async {
+    final preferences = SharedPreferencesAsync();
+    final store = SharedPreferencesCalendarStore(preferences);
+
+    await store.upsertOrWithdraw(
+      row('entry', status: 'published').copyWith(
+        elementPairEn: 'Water - Water',
+        elementCombinationTitleEn: 'Auspicious Element Combination',
+        elementDescriptionEn:
+            "This elemental combination strengthens and extends one's life.",
+      ),
+    );
+
+    final restartedStore = SharedPreferencesCalendarStore(preferences);
+    final storedRow = (await restartedStore.publishedEntries()).single;
+
+    expect(storedRow.elementPairEn, 'Water - Water');
+    expect(
+      storedRow.elementCombinationTitleEn,
+      'Auspicious Element Combination',
+    );
+    expect(
+      storedRow.elementDescriptionEn,
+      "This elemental combination strengthens and extends one's life.",
+    );
+  });
+
+  test('persists Tibetan date detail metadata for published rows', () async {
+    final preferences = SharedPreferencesAsync();
+    final store = SharedPreferencesCalendarStore(preferences);
+
+    await store.upsertOrWithdraw(
+      row('entry', status: 'published').copyWith(
+        monthNumberText: '7',
+        monthElementAnimalEn: 'Fire Dog',
+        yearNumberText: '2153',
+        yearElementAnimalEn: 'Fire Horse',
+      ),
+    );
+
+    final restartedStore = SharedPreferencesCalendarStore(preferences);
+    final storedRow = (await restartedStore.publishedEntries()).single;
+
+    expect(storedRow.monthNumberText, '7');
+    expect(storedRow.monthElementAnimalEn, 'Fire Dog');
+    expect(storedRow.yearNumberText, '2153');
+    expect(storedRow.yearElementAnimalEn, 'Fire Horse');
   });
 }
 

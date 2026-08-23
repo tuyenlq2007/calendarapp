@@ -43,6 +43,13 @@ class CalendarFeedRow implements CalendarFeedEntry {
     required this.descriptionEn,
     required this.descriptionBo,
     this.elementTibetanLine = '',
+    this.elementPairEn = '',
+    this.elementCombinationTitleEn = '',
+    this.elementDescriptionEn = '',
+    this.monthNumberText = '',
+    this.monthElementAnimalEn = '',
+    this.yearNumberText = '',
+    this.yearElementAnimalEn = '',
     required this.status,
   });
 
@@ -57,6 +64,16 @@ class CalendarFeedRow implements CalendarFeedEntry {
       descriptionEn: _string(json, 'description_en'),
       descriptionBo: _string(json, 'description_bo'),
       elementTibetanLine: _optionalString(json, 'element_tibetan_line'),
+      elementPairEn: _optionalString(json, 'element_pair_en'),
+      elementCombinationTitleEn: _optionalString(
+        json,
+        'element_combination_title_en',
+      ),
+      elementDescriptionEn: _optionalString(json, 'element_description_en'),
+      monthNumberText: _optionalString(json, 'month_number_text'),
+      monthElementAnimalEn: _optionalString(json, 'month_element_animal_en'),
+      yearNumberText: _optionalString(json, 'year_number_text'),
+      yearElementAnimalEn: _optionalString(json, 'year_element_animal_en'),
       status: _string(json, 'status'),
     );
   }
@@ -74,6 +91,13 @@ class CalendarFeedRow implements CalendarFeedEntry {
   final String descriptionEn;
   final String descriptionBo;
   final String elementTibetanLine;
+  final String elementPairEn;
+  final String elementCombinationTitleEn;
+  final String elementDescriptionEn;
+  final String monthNumberText;
+  final String monthElementAnimalEn;
+  final String yearNumberText;
+  final String yearElementAnimalEn;
   final String status;
 
   bool get isWithdrawn => status == 'archived';
@@ -123,6 +147,13 @@ class CalendarFeedRow implements CalendarFeedEntry {
 
   CalendarFeedRow copyWith({
     String? elementTibetanLine,
+    String? elementPairEn,
+    String? elementCombinationTitleEn,
+    String? elementDescriptionEn,
+    String? monthNumberText,
+    String? monthElementAnimalEn,
+    String? yearNumberText,
+    String? yearElementAnimalEn,
   }) {
     return CalendarFeedRow(
       id: id,
@@ -134,6 +165,14 @@ class CalendarFeedRow implements CalendarFeedEntry {
       descriptionEn: descriptionEn,
       descriptionBo: descriptionBo,
       elementTibetanLine: elementTibetanLine ?? this.elementTibetanLine,
+      elementPairEn: elementPairEn ?? this.elementPairEn,
+      elementCombinationTitleEn:
+          elementCombinationTitleEn ?? this.elementCombinationTitleEn,
+      elementDescriptionEn: elementDescriptionEn ?? this.elementDescriptionEn,
+      monthNumberText: monthNumberText ?? this.monthNumberText,
+      monthElementAnimalEn: monthElementAnimalEn ?? this.monthElementAnimalEn,
+      yearNumberText: yearNumberText ?? this.yearNumberText,
+      yearElementAnimalEn: yearElementAnimalEn ?? this.yearElementAnimalEn,
       status: status,
     );
   }

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/network/supabase_calendar_feed.dart';
+import 'core/network/supabase_online_teaching_feed.dart';
 import 'features/calendar/data/calendar_sync_service.dart';
 import 'features/calendar/data/shared_preferences_calendar_store.dart';
 import 'features/teachings/data/shared_preferences_teaching_store.dart';
@@ -19,6 +20,7 @@ Future<void> main() async {
     SharedPreferencesAsync(),
   );
   CalendarSyncService? syncService;
+  SupabaseOnlineTeachingFeed? onlineTeachingFeed;
 
   if (_supabaseUrl.isNotEmpty && _supabaseAnonKey.isNotEmpty) {
     await Supabase.initialize(
@@ -29,12 +31,16 @@ Future<void> main() async {
       SupabaseCalendarFeed.fromClient(Supabase.instance.client),
       store,
     );
+    onlineTeachingFeed = SupabaseOnlineTeachingFeed.fromClient(
+      Supabase.instance.client,
+    );
   }
 
   runApp(
     BaromKagyuCalendarApp(
       calendarStore: store.publishedEntries,
       teachingContentStore: teachingStore.publishedContent,
+      onlineTeachingStore: onlineTeachingFeed?.publishedRows,
       initialLastSyncedAt: await store.lastSyncedAt(),
       syncCalendar: syncService == null
           ? null

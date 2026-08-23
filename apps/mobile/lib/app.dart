@@ -6,6 +6,7 @@ import 'features/calendar/domain/calendar_entry.dart';
 import 'features/calendar/presentation/month_screen.dart';
 import 'features/reminders/domain/reminder_category.dart';
 import 'features/settings/presentation/notification_settings_screen.dart';
+import 'features/teachings/data/online_teaching_database.dart';
 import 'features/teachings/data/teaching_content_database.dart';
 import 'features/teachings/presentation/teachings_screen.dart';
 import 'features/today/presentation/today_screen.dart';
@@ -20,6 +21,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
     this.syncCalendar,
     this.initialLastSyncedAt,
     this.teachingContentStore,
+    this.onlineTeachingStore,
   });
 
   final Locale? locale;
@@ -28,6 +30,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
   final Future<DateTime> Function()? syncCalendar;
   final DateTime? initialLastSyncedAt;
   final Future<List<TeachingContentRow>> Function()? teachingContentStore;
+  final Future<List<OnlineTeachingRow>> Function()? onlineTeachingStore;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +47,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
         syncCalendar: syncCalendar,
         initialLastSyncedAt: initialLastSyncedAt,
         teachingContentStore: teachingContentStore,
+        onlineTeachingStore: onlineTeachingStore,
         currentDate: currentDate,
       ),
     );
@@ -72,6 +76,7 @@ class CalendarHomeScreen extends StatefulWidget {
     this.syncCalendar,
     this.initialLastSyncedAt,
     this.teachingContentStore,
+    this.onlineTeachingStore,
     this.currentDate,
   });
 
@@ -79,6 +84,7 @@ class CalendarHomeScreen extends StatefulWidget {
   final Future<DateTime> Function()? syncCalendar;
   final DateTime? initialLastSyncedAt;
   final Future<List<TeachingContentRow>> Function()? teachingContentStore;
+  final Future<List<OnlineTeachingRow>> Function()? onlineTeachingStore;
   final DateTime? currentDate;
 
   @override
@@ -100,6 +106,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   List<CalendarFeedRow> _calendarRows = const [];
   CalendarEntry? _selectedCalendarEntry;
   List<TeachingContentRow> _teachingContent = sampleTeachingContent;
+  List<OnlineTeachingRow> _onlineTeachings = const [];
   Set<String> _savedTeachingIds = const {};
 
   @override
@@ -108,6 +115,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     _lastSyncedAt = widget.initialLastSyncedAt;
     _loadStoredCalendar();
     _loadStoredTeachings();
+    _loadOnlineTeachings();
   }
 
   @override
@@ -116,9 +124,13 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     final calendarMonth = _visibleCalendarMonth();
     final currentDate = _currentDateForDisplay();
     final isViewingSelectedDay = _isViewingSelectedDay(currentDate);
+    final todayHeaderMonth = _selectedCalendarEntry == null
+        ? currentDate
+        : _selectedMonth;
     final screens = [
       TodayScreen(
-        monthTitle: '${_monthName(currentDate.month)} ${currentDate.year}',
+        monthTitle:
+            '${_monthName(todayHeaderMonth.month)} ${todayHeaderMonth.year}',
         entry: _selectedCalendarEntry ?? _currentDayEntry(),
         showTodayButton: isViewingSelectedDay,
         onTodaySelected: _selectToday,
@@ -135,6 +147,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
       ),
       TeachingsScreen(
         items: _teachingContent,
+        onlineTeachings: _onlineTeachings,
         savedIds: _savedTeachingIds,
         onToggleSaved: _toggleSavedTeaching,
       ),
@@ -207,6 +220,8 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
         _isSyncing = false;
       });
       await _loadStoredCalendar();
+      await _loadStoredTeachings();
+      await _loadOnlineTeachings();
     } catch (error, stackTrace) {
       debugPrint('Calendar sync failed: $error');
       debugPrintStack(stackTrace: stackTrace);
@@ -244,6 +259,22 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     setState(() {
       _teachingContent = rows;
     });
+  }
+
+  Future<void> _loadOnlineTeachings() async {
+    final onlineTeachingStore = widget.onlineTeachingStore;
+    if (onlineTeachingStore == null) return;
+
+    try {
+      final rows = await onlineTeachingStore();
+      if (!mounted) return;
+      setState(() {
+        _onlineTeachings = rows;
+      });
+    } catch (error, stackTrace) {
+      debugPrint('Online teachings sync failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 
   void _toggleSavedTeaching(String id) {

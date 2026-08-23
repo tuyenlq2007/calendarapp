@@ -117,8 +117,14 @@ class ReminderScheduler {
     required this.now,
     this.schedulingHorizon = const Duration(days: 90),
     this.maxPendingNotifications = 64,
-  }) : assert(!schedulingHorizon.isNegative, 'schedulingHorizon must not be negative'),
-       assert(maxPendingNotifications >= 0, 'maxPendingNotifications must not be negative');
+  }) : assert(
+         !schedulingHorizon.isNegative,
+         'schedulingHorizon must not be negative',
+       ),
+       assert(
+         maxPendingNotifications >= 0,
+         'maxPendingNotifications must not be negative',
+       );
 
   final NotificationsPort notifications;
   final DateTime Function() now;
@@ -131,16 +137,19 @@ class ReminderScheduler {
   ) async {
     final cutoff = now();
     final horizonEnd = cutoff.add(schedulingHorizon);
-    final eligible = entries
-        .where((entry) => enabled.contains(entry.category))
-        .where((entry) => entry.scheduledAt.isAfter(cutoff))
-        .where((entry) => !entry.scheduledAt.isAfter(horizonEnd))
-        .toList()
-      ..sort((left, right) {
-        final timeComparison = left.scheduledAt.compareTo(right.scheduledAt);
-        if (timeComparison != 0) return timeComparison;
-        return left.id.compareTo(right.id);
-      });
+    final eligible =
+        entries
+            .where((entry) => enabled.contains(entry.category))
+            .where((entry) => entry.scheduledAt.isAfter(cutoff))
+            .where((entry) => !entry.scheduledAt.isAfter(horizonEnd))
+            .toList()
+          ..sort((left, right) {
+            final timeComparison = left.scheduledAt.compareTo(
+              right.scheduledAt,
+            );
+            if (timeComparison != 0) return timeComparison;
+            return left.id.compareTo(right.id);
+          });
 
     final pending = eligible
         .take(maxPendingNotifications)
