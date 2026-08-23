@@ -63,6 +63,7 @@ describe("calendar publishing workflow", () => {
       titleBo: "དུས་ཆེན།",
       descriptionEn: "Daily practice",
       descriptionBo: "ཉིན་རེའི་ཉམས་ལེན།",
+      elementTibetanLine: "",
       intent: "draft",
     });
 
@@ -76,6 +77,8 @@ describe("calendar publishing workflow", () => {
       titleBo: "དུས་ཆེན།",
       descriptionEn: "Daily practice",
       descriptionBo: "ཉིན་རེའི་ཉམས་ལེན།",
+      elementTibetanLine:
+        "ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།",
       intent: "review",
     });
 
@@ -111,6 +114,8 @@ describe("calendar publishing workflow", () => {
         status: "published",
         titleEn: "Practice",
         titleBo: "དུས་ཆེན།",
+        elementTibetanLine:
+          "ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།",
       },
     ]);
   });

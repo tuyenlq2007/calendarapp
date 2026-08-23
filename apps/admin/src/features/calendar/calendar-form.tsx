@@ -49,6 +49,14 @@ export function CalendarForm({
         Tibetan description
         <textarea name="descriptionBo" lang="bo" defaultValue={entry.descriptionBo} />
       </label>
+      <label>
+        Element Tibetan line
+        <textarea
+          name="elementTibetanLine"
+          lang="bo"
+          defaultValue={entry.elementTibetanLine}
+        />
+      </label>
       <div>
         <button name="intent" value="draft" type="submit">
           Save draft

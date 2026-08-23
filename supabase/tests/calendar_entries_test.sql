@@ -1,6 +1,6 @@
 begin;
 
-select plan(13);
+select plan(14);
 
 create temporary table calendar_test_versions (
   name text primary key,
@@ -144,6 +144,14 @@ where title_en in (
 
 update public.calendar_entries
 set description_en = 'Updated published target entry'
+where id = (
+  select id
+  from calendar_test_versions
+  where name = 'Published update target'
+);
+
+update public.calendar_entries
+set element_tibetan_line = 'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།'
 where id = (
   select id
   from calendar_test_versions
@@ -325,6 +333,20 @@ select is(
   ),
   1,
   'updated public rows reappear in the feed after an older cursor'
+);
+
+select is(
+  (
+    select element_tibetan_line
+    from public.calendar_changes(0)
+    where id = (
+      select id
+      from calendar_test_versions
+      where name = 'Published update target'
+    )
+  ),
+  'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
+  'public feed includes the daily element Tibetan line'
 );
 
 select is(

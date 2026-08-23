@@ -12,29 +12,35 @@ void main() {
     expect(notifications.scheduled.map((n) => n.entryId), ['holy-1']);
   });
 
-  test('permission denial cancels existing notifications without error', () async {
-    final notifications = FakeNotifications(canSchedule: false);
-    final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
+  test(
+    'permission denial cancels existing notifications without error',
+    () async {
+      final notifications = FakeNotifications(canSchedule: false);
+      final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
 
-    await scheduler.rebuild(entries, {ReminderCategory.holyDays});
+      await scheduler.rebuild(entries, {ReminderCategory.holyDays});
 
-    expect(notifications.cancelCount, 1);
-    expect(notifications.scheduled, isEmpty);
-  });
+      expect(notifications.cancelCount, 1);
+      expect(notifications.scheduled, isEmpty);
+    },
+  );
 
-  test('time-zone rebuild cancels stale notifications before rescheduling', () async {
-    final notifications = FakeNotifications();
-    final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
+  test(
+    'time-zone rebuild cancels stale notifications before rescheduling',
+    () async {
+      final notifications = FakeNotifications();
+      final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
 
-    await scheduler.rebuild(entries, {
-      ReminderCategory.dailyPractice,
-      ReminderCategory.holyDays,
-    });
-    await scheduler.rebuild(entries, {ReminderCategory.dailyPractice});
+      await scheduler.rebuild(entries, {
+        ReminderCategory.dailyPractice,
+        ReminderCategory.holyDays,
+      });
+      await scheduler.rebuild(entries, {ReminderCategory.dailyPractice});
 
-    expect(notifications.cancelCount, 2);
-    expect(notifications.scheduled.map((n) => n.entryId), ['practice-1']);
-  });
+      expect(notifications.cancelCount, 2);
+      expect(notifications.scheduled.map((n) => n.entryId), ['practice-1']);
+    },
+  );
 
   test('notifications compare by value', () {
     expect(
@@ -81,21 +87,24 @@ void main() {
     expect(notifications.scheduled.map((n) => n.entryId), ['holy-1']);
   });
 
-  test('scheduling is capped to the configured pending notification limit', () async {
-    final notifications = FakeNotifications();
-    final scheduler = ReminderScheduler(
-      notifications,
-      now: () => fixedNow,
-      maxPendingNotifications: 1,
-    );
+  test(
+    'scheduling is capped to the configured pending notification limit',
+    () async {
+      final notifications = FakeNotifications();
+      final scheduler = ReminderScheduler(
+        notifications,
+        now: () => fixedNow,
+        maxPendingNotifications: 1,
+      );
 
-    await scheduler.rebuild(entries, {
-      ReminderCategory.dailyPractice,
-      ReminderCategory.holyDays,
-    });
+      await scheduler.rebuild(entries, {
+        ReminderCategory.dailyPractice,
+        ReminderCategory.holyDays,
+      });
 
-    expect(notifications.scheduled.map((n) => n.entryId), ['practice-1']);
-  });
+      expect(notifications.scheduled.map((n) => n.entryId), ['practice-1']);
+    },
+  );
 
   test('pending notification cap keeps the earliest reminders first', () async {
     final notifications = FakeNotifications();
@@ -151,46 +160,51 @@ void main() {
     expect(notifications.scheduled, isEmpty);
   });
 
-  test('schedule failures are aggregated after attempting the full plan', () async {
-    final notifications = FakeNotifications(failOnEntryIds: {'holy-1', 'teaching-1'});
-    final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
+  test(
+    'schedule failures are aggregated after attempting the full plan',
+    () async {
+      final notifications = FakeNotifications(
+        failOnEntryIds: {'holy-1', 'teaching-1'},
+      );
+      final scheduler = ReminderScheduler(notifications, now: () => fixedNow);
 
-    await expectLater(
-      scheduler.rebuild(
-        [
-          ...entries,
-          CalendarReminderEntry(
-            id: 'teaching-1',
-            title: 'Teaching',
-            body: 'New teaching',
-            scheduledAt: DateTime(2026, 2, 3, 7),
-            category: ReminderCategory.teachings,
-          ),
-        ],
-        {
-          ReminderCategory.dailyPractice,
-          ReminderCategory.holyDays,
-          ReminderCategory.teachings,
-        },
-      ),
-      throwsA(
-        isA<ReminderSchedulingException>()
-            .having(
-              (error) => error.failures.map((failure) => failure.entryId),
-              'failed entry ids',
-              ['holy-1', 'teaching-1'],
-            )
-            .having(
-              (error) => error.stackTrace.toString(),
-              'stackTrace',
-              contains('FakeNotifications.schedule'),
+      await expectLater(
+        scheduler.rebuild(
+          [
+            ...entries,
+            CalendarReminderEntry(
+              id: 'teaching-1',
+              title: 'Teaching',
+              body: 'New teaching',
+              scheduledAt: DateTime(2026, 2, 3, 7),
+              category: ReminderCategory.teachings,
             ),
-      ),
-    );
+          ],
+          {
+            ReminderCategory.dailyPractice,
+            ReminderCategory.holyDays,
+            ReminderCategory.teachings,
+          },
+        ),
+        throwsA(
+          isA<ReminderSchedulingException>()
+              .having(
+                (error) => error.failures.map((failure) => failure.entryId),
+                'failed entry ids',
+                ['holy-1', 'teaching-1'],
+              )
+              .having(
+                (error) => error.stackTrace.toString(),
+                'stackTrace',
+                contains('FakeNotifications.schedule'),
+              ),
+        ),
+      );
 
-    expect(notifications.cancelCount, 1);
-    expect(notifications.scheduled.map((n) => n.entryId), ['practice-1']);
-  });
+      expect(notifications.cancelCount, 1);
+      expect(notifications.scheduled.map((n) => n.entryId), ['practice-1']);
+    },
+  );
 
   test('invalid scheduling policies fail fast in debug builds', () {
     expect(

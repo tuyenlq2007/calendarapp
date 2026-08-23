@@ -168,6 +168,8 @@ describe("calendar publishing actions", () => {
         titleBo: "དུས་ཆེན།",
         descriptionEn: "Daily practice",
         descriptionBo: "ཉིན་རེའི་ཉམས་ལེན།",
+        elementTibetanLine:
+          "ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།",
         intent: "draft",
       }),
     ).resolves.toEqual({ ok: true, id: "new-entry" });
@@ -181,11 +183,23 @@ describe("calendar publishing actions", () => {
         titleBo: "དུས་ཆེན།",
         descriptionEn: "Daily practice",
         descriptionBo: "ཉིན་རེའི་ཉམས་ལེན།",
+        elementTibetanLine:
+          "ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།",
         intent: "review",
       }),
     ).resolves.toEqual({ ok: true, id: "new-entry" });
 
     expect(db.transitions).toEqual([{ id: "new-entry", status: "review" }]);
+    expect(db.saved).toEqual([
+      expect.objectContaining({
+        elementTibetanLine:
+          "ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།",
+      }),
+      expect.objectContaining({
+        elementTibetanLine:
+          "ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།",
+      }),
+    ]);
   });
 
   it("validates review submission before mutating drafts", async () => {
@@ -199,6 +213,7 @@ describe("calendar publishing actions", () => {
       titleBo: "",
       descriptionEn: "Daily practice",
       descriptionBo: "",
+      elementTibetanLine: "",
       intent: "review",
     });
 

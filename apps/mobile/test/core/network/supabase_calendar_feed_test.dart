@@ -3,6 +3,33 @@ import 'package:mobile/core/network/supabase_calendar_feed.dart';
 import 'package:mobile/features/calendar/data/calendar_database.dart';
 
 void main() {
+  test('calendar change page parses Tibetan date detail metadata fields', () {
+    final page = CalendarChangePage.fromJsonRows([
+      {
+        'id': 'metadata-entry',
+        'version': 9,
+        'gregorian_date': '2026-08-24',
+        'tibetan_date_text': '10th lunar day',
+        'title_en': 'Guru Rinpoche day',
+        'title_bo': 'Published Tibetan title',
+        'description_en': 'Practice day',
+        'description_bo': '',
+        'month_number_text': '7',
+        'month_element_animal_en': 'Fire Dog',
+        'year_number_text': '2153',
+        'year_element_animal_en': 'Fire Horse',
+        'status': 'published',
+      },
+    ]);
+
+    final row = page.entries.single as CalendarFeedRow;
+
+    expect(row.monthNumberText, '7');
+    expect(row.monthElementAnimalEn, 'Fire Dog');
+    expect(row.yearNumberText, '2153');
+    expect(row.yearElementAnimalEn, 'Fire Horse');
+  });
+
   test('calendar change page parses published and archived feed rows', () {
     final page = CalendarChangePage.fromJsonRows([
       {
@@ -13,7 +40,13 @@ void main() {
         'title_en': 'Guru Rinpoche day',
         'title_bo': 'དུས་ཆེན།',
         'description_en': 'Practice day',
+        'element_pair_en': 'Water - Water',
+        'element_combination_title_en': 'Auspicious Element Combination',
+        'element_description_en':
+            "This elemental combination strengthens and extends one's life.",
         'description_bo': 'ཉམས་ལེན།',
+        'element_tibetan_line':
+            'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
         'status': 'published',
       },
       {
@@ -24,7 +57,11 @@ void main() {
         'title_en': '',
         'title_bo': '',
         'description_en': '',
+        'element_pair_en': '',
+        'element_combination_title_en': '',
+        'element_description_en': '',
         'description_bo': '',
+        'element_tibetan_line': '',
         'status': 'archived',
       },
     ]);
@@ -35,6 +72,22 @@ void main() {
     expect(
       (page.entries.first as CalendarFeedRow).titleEn,
       'Guru Rinpoche day',
+    );
+    expect(
+      (page.entries.first as CalendarFeedRow).elementPairEn,
+      'Water - Water',
+    );
+    expect(
+      (page.entries.first as CalendarFeedRow).elementCombinationTitleEn,
+      'Auspicious Element Combination',
+    );
+    expect(
+      (page.entries.first as CalendarFeedRow).elementDescriptionEn,
+      "This elemental combination strengthens and extends one's life.",
+    );
+    expect(
+      (page.entries.first as CalendarFeedRow).elementTibetanLine,
+      'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
     );
     expect((page.entries.last as CalendarFeedRow).isWithdrawn, isTrue);
   });

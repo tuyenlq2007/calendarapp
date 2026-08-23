@@ -42,6 +42,14 @@ class CalendarFeedRow implements CalendarFeedEntry {
     required this.titleBo,
     required this.descriptionEn,
     required this.descriptionBo,
+    this.elementTibetanLine = '',
+    this.elementPairEn = '',
+    this.elementCombinationTitleEn = '',
+    this.elementDescriptionEn = '',
+    this.monthNumberText = '',
+    this.monthElementAnimalEn = '',
+    this.yearNumberText = '',
+    this.yearElementAnimalEn = '',
     required this.status,
   });
 
@@ -55,6 +63,17 @@ class CalendarFeedRow implements CalendarFeedEntry {
       titleBo: _string(json, 'title_bo'),
       descriptionEn: _string(json, 'description_en'),
       descriptionBo: _string(json, 'description_bo'),
+      elementTibetanLine: _optionalString(json, 'element_tibetan_line'),
+      elementPairEn: _optionalString(json, 'element_pair_en'),
+      elementCombinationTitleEn: _optionalString(
+        json,
+        'element_combination_title_en',
+      ),
+      elementDescriptionEn: _optionalString(json, 'element_description_en'),
+      monthNumberText: _optionalString(json, 'month_number_text'),
+      monthElementAnimalEn: _optionalString(json, 'month_element_animal_en'),
+      yearNumberText: _optionalString(json, 'year_number_text'),
+      yearElementAnimalEn: _optionalString(json, 'year_element_animal_en'),
       status: _string(json, 'status'),
     );
   }
@@ -71,6 +90,14 @@ class CalendarFeedRow implements CalendarFeedEntry {
   final String titleBo;
   final String descriptionEn;
   final String descriptionBo;
+  final String elementTibetanLine;
+  final String elementPairEn;
+  final String elementCombinationTitleEn;
+  final String elementDescriptionEn;
+  final String monthNumberText;
+  final String monthElementAnimalEn;
+  final String yearNumberText;
+  final String yearElementAnimalEn;
   final String status;
 
   bool get isWithdrawn => status == 'archived';
@@ -104,10 +131,49 @@ class CalendarFeedRow implements CalendarFeedEntry {
     throw FormatException('calendar feed row field $key must be a string');
   }
 
+  static String _optionalString(Map<String, Object?> json, String key) {
+    final value = json[key];
+    if (value == null) return '';
+    if (value is String) return value;
+    throw FormatException('calendar feed row field $key must be a string');
+  }
+
   static int _integer(Map<String, Object?> json, String key) {
     final value = json[key];
     if (value is int) return value;
     if (value is num && value == value.toInt()) return value.toInt();
     throw FormatException('calendar feed row field $key must be an integer');
+  }
+
+  CalendarFeedRow copyWith({
+    String? elementTibetanLine,
+    String? elementPairEn,
+    String? elementCombinationTitleEn,
+    String? elementDescriptionEn,
+    String? monthNumberText,
+    String? monthElementAnimalEn,
+    String? yearNumberText,
+    String? yearElementAnimalEn,
+  }) {
+    return CalendarFeedRow(
+      id: id,
+      version: version,
+      gregorianDate: gregorianDate,
+      tibetanDateText: tibetanDateText,
+      titleEn: titleEn,
+      titleBo: titleBo,
+      descriptionEn: descriptionEn,
+      descriptionBo: descriptionBo,
+      elementTibetanLine: elementTibetanLine ?? this.elementTibetanLine,
+      elementPairEn: elementPairEn ?? this.elementPairEn,
+      elementCombinationTitleEn:
+          elementCombinationTitleEn ?? this.elementCombinationTitleEn,
+      elementDescriptionEn: elementDescriptionEn ?? this.elementDescriptionEn,
+      monthNumberText: monthNumberText ?? this.monthNumberText,
+      monthElementAnimalEn: monthElementAnimalEn ?? this.monthElementAnimalEn,
+      yearNumberText: yearNumberText ?? this.yearNumberText,
+      yearElementAnimalEn: yearElementAnimalEn ?? this.yearElementAnimalEn,
+      status: status,
+    );
   }
 }

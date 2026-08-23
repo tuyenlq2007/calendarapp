@@ -6,6 +6,9 @@ void main() {
   test('release Android manifest declares internet permission', () {
     final manifest = File('android/app/src/main/AndroidManifest.xml');
 
-    expect(manifest.readAsStringSync(), contains('android.permission.INTERNET'));
+    expect(
+      manifest.readAsStringSync(),
+      contains('android.permission.INTERNET'),
+    );
   });
 }

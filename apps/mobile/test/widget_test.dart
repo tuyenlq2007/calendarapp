@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mobile/app.dart';
 import 'package:mobile/features/calendar/data/calendar_database.dart';
+import 'package:mobile/features/teachings/data/online_teaching_database.dart';
 import 'package:mobile/features/teachings/data/teaching_content_database.dart';
 
 void main() {
@@ -49,6 +50,93 @@ void main() {
     expect(find.text('Today'), findsOneWidget);
     expect(find.text('Calendar'), findsOneWidget);
   });
+
+  testWidgets('today screen renders the database-backed element Tibetan line', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 24),
+        calendarStore: () async => [
+          CalendarFeedRow(
+            id: 'element-entry',
+            version: 1,
+            gregorianDate: DateTime(2026, 8, 24),
+            tibetanDateText: '10th lunar day',
+            titleEn: 'Element Practice',
+            titleBo: 'དུས་ཆེན།',
+            descriptionEn: 'Good day for practice.',
+            descriptionBo: '',
+            elementTibetanLine:
+                'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
+            elementPairEn: 'Water - Water',
+            elementCombinationTitleEn: 'Auspicious Element Combination',
+            elementDescriptionEn: "This elemental combination strengthens and extends one's life.",
+            status: 'published',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།'),
+      findsOneWidget,
+    );
+    expect(find.text('Water - Water'), findsNWidgets(2));
+    expect(find.text('Auspicious Element Combination'), findsOneWidget);
+    expect(
+      find.text(
+        "This elemental combination strengthens and extends one's life.",
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Water - Wind'), findsNothing);
+  });
+
+  testWidgets(
+    'today screen uses database-backed Tibetan date detail metadata',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(
+          currentDate: DateTime(2026, 8, 24),
+          calendarStore: () async => [
+            CalendarFeedRow(
+              id: 'metadata-entry',
+              version: 1,
+              gregorianDate: DateTime(2026, 8, 24),
+              tibetanDateText: '10th lunar day',
+              titleEn: 'Avoid business deal; Good day for fire puja',
+              titleBo: 'Published Tibetan title',
+              descriptionEn: 'Barom Kagyu quote',
+              descriptionBo: '',
+              elementPairEn: 'Water - Water',
+              monthNumberText: '7',
+              monthElementAnimalEn: 'Fire Dog',
+              yearNumberText: '2153',
+              yearElementAnimalEn: 'Fire Horse',
+              status: 'published',
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Water - Water'), findsNWidgets(2));
+      expect(find.text('Fire Dog'), findsOneWidget);
+      expect(find.text('Fire Horse'), findsOneWidget);
+      expect(
+        find.text('We are the heirs of our own actions\n~ The Buddha ~'),
+        findsNothing,
+      );
+
+      final quote = tester.widget<Text>(find.text('Barom Kagyu quote'));
+      expect(quote.style?.color, const Color(0xFF087326));
+      expect(quote.style?.fontStyle, FontStyle.italic);
+    },
+  );
 
   testWidgets(
     'month tab shows a seven column calendar grid with practice days',
@@ -245,6 +333,60 @@ void main() {
     expect(find.text('Day'), findsNothing);
     expect(find.text('Today'), findsOneWidget);
   });
+
+  testWidgets(
+    'selected day header uses selected month instead of today month',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(
+          currentDate: DateTime(2026, 8, 22),
+          calendarStore: () async => [
+            CalendarFeedRow(
+              id: 'july-entry',
+              version: 1,
+              gregorianDate: DateTime(2026, 7, 25),
+              tibetanDateText: 'July lunar day',
+              titleEn: 'July Selected Practice',
+              titleBo: 'July Tibetan title',
+              descriptionEn: 'Selected from another month.',
+              descriptionBo: '',
+              status: 'published',
+            ),
+            CalendarFeedRow(
+              id: 'august-entry',
+              version: 2,
+              gregorianDate: DateTime(2026, 8, 22),
+              tibetanDateText: 'August lunar day',
+              titleEn: 'August Current Practice',
+              titleBo: 'August Tibetan title',
+              descriptionEn: 'Current day practice.',
+              descriptionBo: '',
+              status: 'published',
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('August 2026'), findsOneWidget);
+
+      await tester.tap(find.text('Calendar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('day-cell-25')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('July Selected Practice'), findsOneWidget);
+      expect(find.text('Day'), findsOneWidget);
+      expect(find.text('July 2026'), findsOneWidget);
+      expect(find.text('August 2026'), findsNothing);
+    },
+  );
 
   testWidgets('today header aligns month left and brand right', (
     WidgetTester tester,
@@ -576,5 +718,91 @@ void main() {
 
     expect(find.text('Refuge Practice'), findsOneWidget);
     expect(find.text('Lineage Teaching Video'), findsOneWidget);
+  });
+
+  testWidgets('teachings tab keeps fallback content when online load fails', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        onlineTeachingStore: () async {
+          throw const FormatException('online teachings table missing');
+        },
+      ),
+    );
+
+    await tester.tap(find.text('Teachings'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bilingual teachings'), findsOneWidget);
+    expect(find.text('Refuge Practice'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('teachings tab shows online teaching cards with status buttons', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        onlineTeachingStore: () async => [
+          OnlineTeachingRow(
+            id: 'long-life-prayer',
+            title: 'Prayer for the Long Life of His Holiness',
+            practice: 'Recite the Sutra of Boundless Life and Wisdom',
+            startDate: DateTime(2026, 7, 6),
+            endDate: DateTime(2026, 12, 31),
+            status: OnlineTeachingStatus.ongoing,
+            joinUrl: Uri.parse('https://us02web.zoom.us/j/9461447283'),
+            displayOrder: 1,
+            published: true,
+          ),
+          OnlineTeachingRow(
+            id: 'medicine-buddha',
+            title: 'Medicine Buddha Practice',
+            practice: 'Daily Medicine Buddha mantra recitation and dedication',
+            startDate: DateTime(2026, 9),
+            endDate: DateTime(2026, 9, 30),
+            status: OnlineTeachingStatus.upcoming,
+            joinUrl: Uri.parse('https://us02web.zoom.us/j/9461447283'),
+            displayOrder: 2,
+            published: true,
+          ),
+          OnlineTeachingRow(
+            id: 'guru-rinpoche-tsok',
+            title: 'Guru Rinpoche Tsok Practice',
+            practice:
+                'Monthly Guru Rinpoche prayers, tsok, and aspiration practice',
+            startDate: DateTime(2026, 6, 10),
+            endDate: DateTime(2026, 8, 10),
+            status: OnlineTeachingStatus.finished,
+            joinUrl: Uri.parse('https://us02web.zoom.us/j/9461447283'),
+            displayOrder: 3,
+            published: true,
+          ),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text('Teachings'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Online Teachings'), findsOneWidget);
+    expect(
+      find.text('Prayer for the Long Life of His Holiness'),
+      findsOneWidget,
+    );
+    expect(find.text('Practice:'), findsWidgets);
+    expect(find.text('Ongoing'), findsOneWidget);
+    expect(find.text('Upcoming'), findsOneWidget);
+    expect(find.text('Finished'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'JOIN NOW'), findsNWidgets(3));
+
+    final buttons = tester.widgetList<FilledButton>(
+      find.widgetWithText(FilledButton, 'JOIN NOW'),
+    );
+
+    expect(buttons.elementAt(0).onPressed, isNotNull);
+    expect(buttons.elementAt(1).onPressed, isNull);
+    expect(buttons.elementAt(2).onPressed, isNull);
   });
 }

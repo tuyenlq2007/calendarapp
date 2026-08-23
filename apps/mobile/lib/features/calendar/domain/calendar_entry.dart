@@ -8,6 +8,14 @@ class CalendarEntry {
     required this.titleEn,
     required this.titleBo,
     required this.descriptionEn,
+    this.elementTibetanLine = '',
+    this.elementPairEn = '',
+    this.elementCombinationTitleEn = '',
+    this.elementDescriptionEn = '',
+    this.monthNumberText = '',
+    this.monthElementAnimalEn = '',
+    this.yearNumberText = '',
+    this.yearElementAnimalEn = '',
     required this.lunarDay,
     this.isHighlighted = false,
     this.isDharmicDay = false,
@@ -19,6 +27,14 @@ class CalendarEntry {
   final String titleEn;
   final String titleBo;
   final String descriptionEn;
+  final String elementTibetanLine;
+  final String elementPairEn;
+  final String elementCombinationTitleEn;
+  final String elementDescriptionEn;
+  final String monthNumberText;
+  final String monthElementAnimalEn;
+  final String yearNumberText;
+  final String yearElementAnimalEn;
   final int lunarDay;
   final bool isHighlighted;
   final bool isDharmicDay;
@@ -59,6 +75,14 @@ CalendarEntry calendarEntryFromFeedRow(CalendarFeedRow row) {
     titleEn: row.titleEn,
     titleBo: row.titleBo,
     descriptionEn: row.descriptionEn,
+    elementTibetanLine: row.elementTibetanLine,
+    elementPairEn: row.elementPairEn,
+    elementCombinationTitleEn: row.elementCombinationTitleEn,
+    elementDescriptionEn: row.elementDescriptionEn,
+    monthNumberText: row.monthNumberText,
+    monthElementAnimalEn: row.monthElementAnimalEn,
+    yearNumberText: row.yearNumberText,
+    yearElementAnimalEn: row.yearElementAnimalEn,
     lunarDay: row.gregorianDate.day,
     isDharmicDay: true,
   );
@@ -91,7 +115,8 @@ CalendarMonth calendarMonthFromFeedRowsForMonth(
     title: '${monthStart.monthName} ${monthStart.year}',
     year: monthStart.year,
     month: monthStart.month,
-    today: entries.firstOrNull ??
+    today:
+        entries.firstOrNull ??
         CalendarEntry(
           day: 1,
           weekday: monthStart.weekdayName,
