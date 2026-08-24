@@ -149,7 +149,7 @@ abstract class AppLocalizations {
   /// Reminder category label for teaching notifications.
   ///
   /// In en, this message translates to:
-  /// **'Teachings'**
+  /// **'Dharma'**
   String get teachings;
 
   /// Reminder category label for news notifications.

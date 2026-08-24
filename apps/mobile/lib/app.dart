@@ -104,6 +104,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     sampleCalendarEntries.month,
   );
   List<CalendarFeedRow> _calendarRows = const [];
+  DateTime? _selectedDate;
   CalendarEntry? _selectedCalendarEntry;
   List<TeachingContentRow> _teachingContent = sampleTeachingContent;
   List<OnlineTeachingRow> _onlineTeachings = const [];
@@ -134,11 +135,14 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
         entry: _selectedCalendarEntry ?? _currentDayEntry(),
         showTodayButton: isViewingSelectedDay,
         onTodaySelected: _selectToday,
+        onPreviousDaySelected: _selectPreviousDay,
+        onNextDaySelected: _selectNextDay,
       ),
       MonthScreen(
         month: calendarMonth,
         selectedMonth: _selectedMonth,
         currentMonth: DateTime(currentDate.year, currentDate.month),
+        activeDate: _activeDate(),
         onEntrySelected: _selectCalendarEntry,
         onPreviousMonth: _selectPreviousMonth,
         onNextMonth: _selectNextMonth,
@@ -149,6 +153,8 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
         items: _teachingContent,
         onlineTeachings: _onlineTeachings,
         savedIds: _savedTeachingIds,
+        currentDate: widget.currentDate,
+        isActive: _selectedIndex == 2,
         onToggleSaved: _toggleSavedTeaching,
       ),
       NotificationSettingsScreen(
@@ -175,11 +181,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
           child: NavigationBar(
             height: 72,
             selectedIndex: _selectedIndex,
-            onDestinationSelected: (index) {
-              setState(() {
-                _selectedIndex = index;
-              });
-            },
+            onDestinationSelected: _selectDestination,
             destinations: [
               NavigationDestination(
                 icon: const Icon(Icons.today_outlined),
@@ -245,6 +247,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
         final firstDate = rows.first.gregorianDate;
         _selectedMonth = DateTime(firstDate.year, firstDate.month);
       }
+      _selectedDate = null;
       _selectedCalendarEntry = null;
     });
   }
@@ -289,18 +292,21 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
 
   void _selectCalendarEntry(CalendarEntry entry) {
     setState(() {
+      _selectedDate = DateTime(
+        _selectedMonth.year,
+        _selectedMonth.month,
+        entry.day,
+      );
       _selectedCalendarEntry = entry;
       _selectedIndex = 0;
     });
   }
 
   bool _isViewingSelectedDay(DateTime currentDate) {
-    final selectedEntry = _selectedCalendarEntry;
-    if (selectedEntry == null) return false;
+    final selectedDate = _selectedDate;
+    if (selectedDate == null) return false;
 
-    return _selectedMonth.year != currentDate.year ||
-        _selectedMonth.month != currentDate.month ||
-        selectedEntry.day != currentDate.day;
+    return !_isSameDate(selectedDate, currentDate);
   }
 
   DateTime _currentDate() {
@@ -322,6 +328,10 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
 
   CalendarEntry _currentDayEntry() {
     final currentDate = _currentDateForDisplay();
+    return _entryForDate(currentDate);
+  }
+
+  CalendarEntry _entryForDate(DateTime currentDate) {
     for (final row in _calendarRows) {
       final date = row.gregorianDate;
       if (!row.isWithdrawn &&
@@ -366,6 +376,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   void _selectPreviousMonth() {
     setState(() {
       _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month - 1);
+      _selectedDate = null;
       _selectedCalendarEntry = null;
     });
   }
@@ -373,6 +384,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   void _selectNextMonth() {
     setState(() {
       _selectedMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1);
+      _selectedDate = null;
       _selectedCalendarEntry = null;
     });
   }
@@ -380,6 +392,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   void _selectMonthOfYear(int month) {
     setState(() {
       _selectedMonth = DateTime(_selectedMonth.year, month);
+      _selectedDate = null;
       _selectedCalendarEntry = null;
     });
   }
@@ -388,9 +401,53 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     final currentDate = _currentDateForDisplay();
     setState(() {
       _selectedMonth = DateTime(currentDate.year, currentDate.month);
+      _selectedDate = null;
       _selectedCalendarEntry = null;
       _selectedIndex = 0;
     });
+  }
+
+  void _selectPreviousDay() {
+    _selectRelativeDay(-1);
+  }
+
+  void _selectNextDay() {
+    _selectRelativeDay(1);
+  }
+
+  void _selectRelativeDay(int dayOffset) {
+    final baseDate = _selectedDate ?? _currentDateForDisplay();
+    final nextDate = DateTime(
+      baseDate.year,
+      baseDate.month,
+      baseDate.day + dayOffset,
+    );
+    setState(() {
+      _selectedDate = nextDate;
+      _selectedMonth = DateTime(nextDate.year, nextDate.month);
+      _selectedCalendarEntry = _entryForDate(nextDate);
+      _selectedIndex = 0;
+    });
+  }
+
+  void _selectDestination(int index) {
+    setState(() {
+      if (index == 1) {
+        final activeDate = _activeDate();
+        _selectedMonth = DateTime(activeDate.year, activeDate.month);
+      }
+      _selectedIndex = index;
+    });
+  }
+
+  DateTime _activeDate() {
+    return _selectedDate ?? _currentDate();
+  }
+
+  bool _isSameDate(DateTime left, DateTime right) {
+    return left.year == right.year &&
+        left.month == right.month &&
+        left.day == right.day;
   }
 
   String _monthName(int month) {

@@ -34,7 +34,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calendarEvents => 'Calendar events';
 
   @override
-  String get teachings => 'Teachings';
+  String get teachings => 'Dharma';
 
   @override
   String get news => 'News';

@@ -14,19 +14,51 @@ const _maroon = Color(0xFF9B0F18);
 const _green = Color(0xFF087326);
 const _blue = Color(0xFF0C28D8);
 
-class TodayScreen extends StatelessWidget {
+class TodayScreen extends StatefulWidget {
   const TodayScreen({
     super.key,
     required this.monthTitle,
     required this.entry,
     this.showTodayButton = false,
     this.onTodaySelected,
+    this.onPreviousDaySelected,
+    this.onNextDaySelected,
   });
 
   final String monthTitle;
   final CalendarEntry entry;
   final bool showTodayButton;
   final VoidCallback? onTodaySelected;
+  final VoidCallback? onPreviousDaySelected;
+  final VoidCallback? onNextDaySelected;
+
+  @override
+  State<TodayScreen> createState() => _TodayScreenState();
+}
+
+class _TodayScreenState extends State<TodayScreen> {
+  static const _swipeThreshold = 80.0;
+
+  double _horizontalDragDistance = 0;
+  bool _handledHorizontalDrag = false;
+
+  void _resetHorizontalDrag() {
+    _horizontalDragDistance = 0;
+    _handledHorizontalDrag = false;
+  }
+
+  void _handleHorizontalDragUpdate(DragUpdateDetails details) {
+    if (_handledHorizontalDrag) return;
+
+    _horizontalDragDistance += details.primaryDelta ?? 0;
+    if (_horizontalDragDistance <= -_swipeThreshold) {
+      _handledHorizontalDrag = true;
+      widget.onNextDaySelected?.call();
+    } else if (_horizontalDragDistance >= _swipeThreshold) {
+      _handledHorizontalDrag = true;
+      widget.onPreviousDaySelected?.call();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,22 +67,30 @@ class TodayScreen extends StatelessWidget {
       body: Column(
         children: [
           _TopHeader(
-            monthTitle: monthTitle,
-            showTodayButton: showTodayButton,
-            onTodaySelected: onTodaySelected,
+            monthTitle: widget.monthTitle,
+            showTodayButton: widget.showTodayButton,
+            onTodaySelected: widget.onTodaySelected,
           ),
           Expanded(
-            child: SingleChildScrollView(
-              key: const ValueKey('today-scroll'),
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
-              child: Column(
-                children: [
-                  _SelectedDayPanel(entry: entry),
-                  const SizedBox(height: 10),
-                  _ElementPanel(entry: entry),
-                  const SizedBox(height: 10),
-                  _TibetanDateDetails(entry: entry),
-                ],
+            child: GestureDetector(
+              key: const ValueKey('today-swipe-area'),
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragStart: (_) => _resetHorizontalDrag(),
+              onHorizontalDragUpdate: _handleHorizontalDragUpdate,
+              onHorizontalDragEnd: (_) => _resetHorizontalDrag(),
+              onHorizontalDragCancel: _resetHorizontalDrag,
+              child: SingleChildScrollView(
+                key: const ValueKey('today-scroll'),
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
+                child: Column(
+                  children: [
+                    _SelectedDayPanel(entry: widget.entry),
+                    const SizedBox(height: 10),
+                    _ElementPanel(entry: widget.entry),
+                    const SizedBox(height: 10),
+                    _TibetanDateDetails(entry: widget.entry),
+                  ],
+                ),
               ),
             ),
           ),

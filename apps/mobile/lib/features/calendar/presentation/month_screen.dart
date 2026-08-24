@@ -9,6 +9,7 @@ class MonthScreen extends StatelessWidget {
     required this.month,
     required this.selectedMonth,
     required this.currentMonth,
+    required this.activeDate,
     this.onEntrySelected,
     this.onPreviousMonth,
     this.onNextMonth,
@@ -19,6 +20,7 @@ class MonthScreen extends StatelessWidget {
   final CalendarMonth month;
   final DateTime selectedMonth;
   final DateTime currentMonth;
+  final DateTime activeDate;
   final ValueChanged<CalendarEntry>? onEntrySelected;
   final VoidCallback? onPreviousMonth;
   final VoidCallback? onNextMonth;
@@ -79,7 +81,11 @@ class MonthScreen extends StatelessWidget {
               ],
               const _WeekdayHeader(),
               const SizedBox(height: 8),
-              _MonthGrid(month: month, onEntrySelected: onEntrySelected),
+              _MonthGrid(
+                month: month,
+                activeDate: activeDate,
+                onEntrySelected: onEntrySelected,
+              ),
               const SizedBox(height: 16),
               _EventList(entries: month.entries),
             ]),
@@ -222,9 +228,14 @@ class _WeekdayHeader extends StatelessWidget {
 }
 
 class _MonthGrid extends StatelessWidget {
-  const _MonthGrid({required this.month, required this.onEntrySelected});
+  const _MonthGrid({
+    required this.month,
+    required this.activeDate,
+    required this.onEntrySelected,
+  });
 
   final CalendarMonth month;
+  final DateTime activeDate;
   final ValueChanged<CalendarEntry>? onEntrySelected;
 
   @override
@@ -246,13 +257,20 @@ class _MonthGrid extends StatelessWidget {
 
         final day = index - month.firstWeekdayOffset + 1;
         final entry = month.entryForDay(day);
-        return CalendarDayCell(
+        final isActive =
+            activeDate.year == month.year &&
+            activeDate.month == month.month &&
+            activeDate.day == day;
+        final cell = CalendarDayCell(
           key: ValueKey('day-cell-$day'),
           day: day,
           entry: entry,
-          isToday: day == month.today.day,
+          isActive: isActive,
           onTap: entry == null ? null : () => onEntrySelected?.call(entry),
         );
+        if (!isActive) return cell;
+
+        return KeyedSubtree(key: ValueKey('day-cell-active-$day'), child: cell);
       },
     );
   }
@@ -263,23 +281,23 @@ class CalendarDayCell extends StatelessWidget {
     super.key,
     required this.day,
     required this.entry,
-    required this.isToday,
+    required this.isActive,
     this.onTap,
   });
 
   final int day;
   final CalendarEntry? entry;
-  final bool isToday;
+  final bool isActive;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final background = isToday
+    final background = isActive
         ? const Color(0xFF9B0F2E)
         : entry != null
         ? const Color(0xFFFFE7A5)
         : Colors.white;
-    final foreground = isToday ? Colors.white : const Color(0xFF3A1717);
+    final foreground = isActive ? Colors.white : const Color(0xFF3A1717);
 
     return Semantics(
       button: onTap != null,

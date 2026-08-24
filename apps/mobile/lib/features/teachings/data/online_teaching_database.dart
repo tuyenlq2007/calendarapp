@@ -32,7 +32,8 @@ class OnlineTeachingRow {
     required this.practice,
     required this.startDate,
     required this.endDate,
-    required this.status,
+    // Compatibility for old callers while status migrates to a derived value.
+    OnlineTeachingStatus? status,
     required this.joinUrl,
     required this.displayOrder,
     required this.published,
@@ -43,9 +44,13 @@ class OnlineTeachingRow {
       id: _string(json, 'id'),
       title: _string(json, 'title'),
       practice: _string(json, 'practice'),
-      startDate: DateTime.parse(_string(json, 'start_date')),
-      endDate: DateTime.parse(_string(json, 'end_date')),
-      status: OnlineTeachingStatus.fromJson(_string(json, 'status')),
+      startDate: _dateTime(json, 'start_datetime', fallbackKey: 'start_date'),
+      endDate: _dateTime(
+        json,
+        'end_datetime',
+        fallbackKey: 'end_date',
+        legacyDateEndOfDay: true,
+      ),
       joinUrl: Uri.parse(_string(json, 'join_url')),
       displayOrder: _integer(json, 'display_order'),
       published: _boolean(json, 'published'),
@@ -57,13 +62,25 @@ class OnlineTeachingRow {
   final String practice;
   final DateTime startDate;
   final DateTime endDate;
-  final OnlineTeachingStatus status;
   final Uri joinUrl;
   final int displayOrder;
   final bool published;
 
+  OnlineTeachingStatus statusAt(DateTime now) {
+    if (now.isBefore(startDate)) return OnlineTeachingStatus.upcoming;
+    if (!now.isBefore(endDate)) return OnlineTeachingStatus.finished;
+    return OnlineTeachingStatus.ongoing;
+  }
+
+  OnlineTeachingStatus get status => statusAt(DateTime.now());
+
   String get formattedDateRange {
     return '${_formatDayMonth(startDate)} - ${_formatDate(endDate)}';
+  }
+
+  String get formattedLocalDateTimeRange {
+    return '${_formatLocalDateTime(startDate)} - '
+        '${_formatLocalDateTime(endDate)}';
   }
 
   void validate() {
@@ -91,6 +108,39 @@ class OnlineTeachingRow {
     final day = date.day.toString().padLeft(2, '0');
     final month = date.month.toString().padLeft(2, '0');
     return '$day/$month/${date.year}';
+  }
+
+  static String _formatLocalDateTime(DateTime date) {
+    final local = date.toLocal();
+    final day = local.day.toString().padLeft(2, '0');
+    final month = local.month.toString().padLeft(2, '0');
+    final hour = local.hour.toString().padLeft(2, '0');
+    final minute = local.minute.toString().padLeft(2, '0');
+    return '$day/$month $hour:$minute';
+  }
+
+  static DateTime _dateTime(
+    Map<String, Object?> json,
+    String key, {
+    required String fallbackKey,
+    bool legacyDateEndOfDay = false,
+  }) {
+    final preferredValue = json[key];
+    if (preferredValue is String) return DateTime.parse(preferredValue);
+
+    final value = json[fallbackKey];
+    if (value is String) {
+      final parsed = DateTime.parse(value);
+      if (legacyDateEndOfDay &&
+          RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
+        return DateTime(parsed.year, parsed.month, parsed.day, 23, 59, 59, 999);
+      }
+      return parsed;
+    }
+
+    throw FormatException(
+      'online teaching field $key or $fallbackKey must be a string',
+    );
   }
 
   static String _string(Map<String, Object?> json, String key) {
