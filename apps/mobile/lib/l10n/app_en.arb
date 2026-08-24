@@ -32,7 +32,7 @@
   "@calendarEvents": {
     "description": "Reminder category label for calendar event notifications."
   },
-  "teachings": "Teachings",
+  "teachings": "Dharma",
   "@teachings": {
     "description": "Reminder category label for teaching notifications."
   },

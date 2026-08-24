@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -8,39 +10,94 @@ const _teachingRed = Color(0xFF9B141B);
 const _joinRed = Color(0xFFE60000);
 const _cardBorder = Color(0xFFEADCAE);
 
-class TeachingsScreen extends StatelessWidget {
+class TeachingsScreen extends StatefulWidget {
   const TeachingsScreen({
     super.key,
     required this.items,
     required this.onlineTeachings,
     required this.savedIds,
+    required this.isActive,
     required this.onToggleSaved,
+    this.currentDate,
   });
 
   final List<TeachingContentRow> items;
   final List<OnlineTeachingRow> onlineTeachings;
   final Set<String> savedIds;
+  final bool isActive;
+  final DateTime? currentDate;
   final ValueChanged<String> onToggleSaved;
+
+  @override
+  State<TeachingsScreen> createState() => _TeachingsScreenState();
+}
+
+class _TeachingsScreenState extends State<TeachingsScreen> {
+  Timer? _statusTimer;
+  late DateTime _now;
+
+  @override
+  void initState() {
+    super.initState();
+    _now = _currentDateTime();
+    if (widget.isActive) _startStatusTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant TeachingsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive && !oldWidget.isActive) {
+      setState(() => _now = _currentDateTime());
+      _startStatusTimer();
+    } else if (!widget.isActive && oldWidget.isActive) {
+      _stopStatusTimer();
+    } else if (widget.currentDate != oldWidget.currentDate) {
+      setState(() => _now = _currentDateTime());
+    }
+  }
+
+  @override
+  void dispose() {
+    _stopStatusTimer();
+    super.dispose();
+  }
+
+  DateTime _currentDateTime() {
+    return widget.currentDate ?? DateTime.now();
+  }
+
+  void _startStatusTimer() {
+    _statusTimer ??= Timer.periodic(const Duration(minutes: 1), (_) {
+      if (!mounted) return;
+      setState(() => _now = _currentDateTime());
+    });
+  }
+
+  void _stopStatusTimer() {
+    _statusTimer?.cancel();
+    _statusTimer = null;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Teachings')),
-      body: onlineTeachings.isNotEmpty
-          ? _OnlineTeachingList(items: onlineTeachings)
+      appBar: AppBar(title: const Text('Dharma')),
+      body: widget.onlineTeachings.isNotEmpty
+          ? _OnlineTeachingList(items: widget.onlineTeachings, now: _now)
           : _BilingualTeachingList(
-              items: items,
-              savedIds: savedIds,
-              onToggleSaved: onToggleSaved,
+              items: widget.items,
+              savedIds: widget.savedIds,
+              onToggleSaved: widget.onToggleSaved,
             ),
     );
   }
 }
 
 class _OnlineTeachingList extends StatelessWidget {
-  const _OnlineTeachingList({required this.items});
+  const _OnlineTeachingList({required this.items, required this.now});
 
   final List<OnlineTeachingRow> items;
+  final DateTime now;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +114,7 @@ class _OnlineTeachingList extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            'Online Teachings',
+            'Online Dharma',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: _teachingRed,
               fontWeight: FontWeight.w900,
@@ -65,7 +122,8 @@ class _OnlineTeachingList extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          for (final item in sortedItems) _OnlineTeachingCard(item: item),
+          for (final item in sortedItems)
+            _OnlineTeachingCard(item: item, now: now),
         ],
       ),
     );
@@ -73,13 +131,15 @@ class _OnlineTeachingList extends StatelessWidget {
 }
 
 class _OnlineTeachingCard extends StatelessWidget {
-  const _OnlineTeachingCard({required this.item});
+  const _OnlineTeachingCard({required this.item, required this.now});
 
   final OnlineTeachingRow item;
+  final DateTime now;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final status = item.statusAt(now);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
@@ -132,7 +192,7 @@ class _OnlineTeachingCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    item.formattedDateRange,
+                    item.formattedLocalDateTimeRange,
                     style: theme.textTheme.titleLarge?.copyWith(
                       color: const Color(0xFFD40000),
                       fontWeight: FontWeight.w900,
@@ -141,7 +201,7 @@ class _OnlineTeachingCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                _StatusPill(status: item.status),
+                _StatusPill(status: status),
               ],
             ),
             const SizedBox(height: 30),
@@ -149,7 +209,7 @@ class _OnlineTeachingCard extends StatelessWidget {
               child: SizedBox(
                 width: 260,
                 child: FilledButton(
-                  onPressed: item.status.canJoin
+                  onPressed: status.canJoin
                       ? () => launchUrl(
                           item.joinUrl,
                           mode: LaunchMode.externalApplication,
@@ -248,7 +308,7 @@ class _BilingualTeachingList extends StatelessWidget {
         Text('Saved library', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
         if (savedItems.isEmpty)
-          const Text('No teachings saved offline yet.')
+          const Text('No Dharma saved offline yet.')
         else
           for (final item in savedItems)
             ListTile(
@@ -258,10 +318,7 @@ class _BilingualTeachingList extends StatelessWidget {
               subtitle: Text(item.category),
             ),
         const SizedBox(height: 20),
-        Text(
-          'Bilingual teachings',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
+        Text('Bilingual Dharma', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         for (final item in items)
           _TeachingCard(

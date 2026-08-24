@@ -6,6 +6,24 @@ import 'package:mobile/features/calendar/data/calendar_database.dart';
 import 'package:mobile/features/teachings/data/online_teaching_database.dart';
 import 'package:mobile/features/teachings/data/teaching_content_database.dart';
 
+String monthName(int month) {
+  return switch (month) {
+    DateTime.january => 'January',
+    DateTime.february => 'February',
+    DateTime.march => 'March',
+    DateTime.april => 'April',
+    DateTime.may => 'May',
+    DateTime.june => 'June',
+    DateTime.july => 'July',
+    DateTime.august => 'August',
+    DateTime.september => 'September',
+    DateTime.october => 'October',
+    DateTime.november => 'November',
+    DateTime.december => 'December',
+    _ => '',
+  };
+}
+
 void main() {
   testWidgets('today screen shows bilingual Barom Kagyu calendar content', (
     WidgetTester tester,
@@ -141,7 +159,9 @@ void main() {
   testWidgets(
     'month tab shows a seven column calendar grid with practice days',
     (WidgetTester tester) async {
-      await tester.pumpWidget(const BaromKagyuCalendarApp());
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(currentDate: DateTime(2021, 2, 22)),
+      );
 
       await tester.tap(find.text('Calendar'));
       await tester.pumpAndSettle();
@@ -157,6 +177,68 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Dharma Protector day'), findsOneWidget);
+    },
+  );
+
+  testWidgets('calendar tab opens current month when no day is selected', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 24),
+        calendarStore: () async => [
+          CalendarFeedRow(
+            id: 'july-entry',
+            version: 1,
+            gregorianDate: DateTime(2026, 7, 25),
+            tibetanDateText: 'July lunar day',
+            titleEn: 'July Practice',
+            titleBo: 'July Tibetan title',
+            descriptionEn: 'Practice from an older month.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+          CalendarFeedRow(
+            id: 'august-entry',
+            version: 2,
+            gregorianDate: DateTime(2026, 8, 24),
+            tibetanDateText: 'August lunar day',
+            titleEn: 'August Current Practice',
+            titleBo: 'August Tibetan title',
+            descriptionEn: 'Practice for the current day.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Calendar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('August 2026'), findsOneWidget);
+    expect(find.byKey(const ValueKey('day-cell-active-24')), findsOneWidget);
+  });
+
+  testWidgets(
+    'calendar tab opens real current month when local data is empty',
+    (WidgetTester tester) async {
+      final now = DateTime.now();
+
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(calendarStore: () async => []),
+      );
+
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Calendar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('${monthName(now.month)} ${now.year}'), findsOneWidget);
+      expect(
+        find.byKey(ValueKey('day-cell-active-${now.day}')),
+        findsOneWidget,
+      );
     },
   );
 
@@ -307,7 +389,9 @@ void main() {
   testWidgets('calendar day selection replaces and resets today content', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const BaromKagyuCalendarApp());
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(currentDate: DateTime(2021, 2, 22)),
+    );
 
     await tester.tap(find.text('Calendar'));
     await tester.pumpAndSettle();
@@ -333,6 +417,150 @@ void main() {
     expect(find.text('Day'), findsNothing);
     expect(find.text('Today'), findsOneWidget);
   });
+
+  testWidgets('calendar tab returns to the selected day month', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 22),
+        calendarStore: () async => [
+          CalendarFeedRow(
+            id: 'july-entry',
+            version: 1,
+            gregorianDate: DateTime(2026, 7, 25),
+            tibetanDateText: 'July lunar day',
+            titleEn: 'July Selected Practice',
+            titleBo: 'July Tibetan title',
+            descriptionEn: 'Selected from another month.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+          CalendarFeedRow(
+            id: 'august-entry',
+            version: 2,
+            gregorianDate: DateTime(2026, 8, 22),
+            tibetanDateText: 'August lunar day',
+            titleEn: 'August Current Practice',
+            titleBo: 'August Tibetan title',
+            descriptionEn: 'Current day practice.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Calendar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Previous month'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('day-cell-25')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('day-cell-25')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('July Selected Practice'), findsOneWidget);
+
+    await tester.tap(find.text('Calendar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('July 2026'), findsOneWidget);
+    expect(find.byKey(const ValueKey('day-cell-active-25')), findsOneWidget);
+  });
+
+  testWidgets('today screen swipes between adjacent dates', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 22),
+        calendarStore: () async => [
+          CalendarFeedRow(
+            id: 'current-entry',
+            version: 1,
+            gregorianDate: DateTime(2026, 8, 22),
+            tibetanDateText: 'Current lunar day',
+            titleEn: 'Current Practice',
+            titleBo: 'Current Tibetan title',
+            descriptionEn: 'Current day practice.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+          CalendarFeedRow(
+            id: 'next-entry',
+            version: 2,
+            gregorianDate: DateTime(2026, 8, 23),
+            tibetanDateText: 'Next lunar day',
+            titleEn: 'Next Practice',
+            titleBo: 'Next Tibetan title',
+            descriptionEn: 'Next day practice.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    expect(find.text('Current Practice'), findsOneWidget);
+
+    await tester.drag(
+      find.byKey(const ValueKey('today-swipe-area')),
+      const Offset(-450, 0),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Next Practice'), findsOneWidget);
+    expect(find.text('Current Practice'), findsNothing);
+    expect(find.text('23'), findsWidgets);
+
+    await tester.drag(
+      find.byKey(const ValueKey('today-swipe-area')),
+      const Offset(450, 0),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Current Practice'), findsOneWidget);
+    expect(find.text('Next Practice'), findsNothing);
+  });
+
+  testWidgets(
+    'today screen swipe shows empty state for dates without practice',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(
+          currentDate: DateTime(2026, 8, 22),
+          calendarStore: () async => [
+            CalendarFeedRow(
+              id: 'current-entry',
+              version: 1,
+              gregorianDate: DateTime(2026, 8, 22),
+              tibetanDateText: 'Current lunar day',
+              titleEn: 'Current Practice',
+              titleBo: 'Current Tibetan title',
+              descriptionEn: 'Current day practice.',
+              descriptionBo: '',
+              status: 'published',
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      await tester.drag(
+        find.byKey(const ValueKey('today-swipe-area')),
+        const Offset(-450, 0),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('No practice day selected'), findsOneWidget);
+      expect(find.text('No practice days for this day yet.'), findsOneWidget);
+      expect(find.text('23'), findsWidgets);
+    },
+  );
 
   testWidgets(
     'selected day header uses selected month instead of today month',
@@ -377,6 +605,8 @@ void main() {
       expect(find.text('August 2026'), findsOneWidget);
 
       await tester.tap(find.text('Calendar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Previous month'));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('day-cell-25')));
       await tester.pumpAndSettle();
@@ -518,9 +748,9 @@ void main() {
   ) async {
     await tester.pumpWidget(const BaromKagyuCalendarApp());
 
-    await tester.tap(find.text('Teachings'));
+    await tester.tap(find.text('Dharma'));
     await tester.pumpAndSettle();
-    expect(find.text('Teachings'), findsWidgets);
+    expect(find.text('Dharma'), findsWidgets);
     expect(tester.takeException(), isNull);
 
     await tester.tap(find.text('More'));
@@ -692,7 +922,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Teachings'));
+    await tester.tap(find.text('Dharma'));
     await tester.pumpAndSettle();
 
     expect(find.text('Refuge Practice'), findsOneWidget);
@@ -713,7 +943,7 @@ void main() {
       BaromKagyuCalendarApp(teachingContentStore: () async => []),
     );
 
-    await tester.tap(find.text('Teachings'));
+    await tester.tap(find.text('Dharma'));
     await tester.pumpAndSettle();
 
     expect(find.text('Refuge Practice'), findsOneWidget);
@@ -731,10 +961,10 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Teachings'));
+    await tester.tap(find.text('Dharma'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Bilingual teachings'), findsOneWidget);
+    expect(find.text('Bilingual Dharma'), findsOneWidget);
     expect(find.text('Refuge Practice'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -751,7 +981,6 @@ void main() {
             practice: 'Recite the Sutra of Boundless Life and Wisdom',
             startDate: DateTime(2026, 7, 6),
             endDate: DateTime(2026, 12, 31),
-            status: OnlineTeachingStatus.ongoing,
             joinUrl: Uri.parse('https://us02web.zoom.us/j/9461447283'),
             displayOrder: 1,
             published: true,
@@ -762,7 +991,6 @@ void main() {
             practice: 'Daily Medicine Buddha mantra recitation and dedication',
             startDate: DateTime(2026, 9),
             endDate: DateTime(2026, 9, 30),
-            status: OnlineTeachingStatus.upcoming,
             joinUrl: Uri.parse('https://us02web.zoom.us/j/9461447283'),
             displayOrder: 2,
             published: true,
@@ -774,7 +1002,6 @@ void main() {
                 'Monthly Guru Rinpoche prayers, tsok, and aspiration practice',
             startDate: DateTime(2026, 6, 10),
             endDate: DateTime(2026, 8, 10),
-            status: OnlineTeachingStatus.finished,
             joinUrl: Uri.parse('https://us02web.zoom.us/j/9461447283'),
             displayOrder: 3,
             published: true,
@@ -783,15 +1010,18 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Teachings'));
+    await tester.tap(find.text('Dharma'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Online Teachings'), findsOneWidget);
+    expect(find.text('Online Dharma'), findsOneWidget);
     expect(
       find.text('Prayer for the Long Life of His Holiness'),
       findsOneWidget,
     );
     expect(find.text('Practice:'), findsWidgets);
+    expect(find.text('06/07 00:00 - 31/12 00:00'), findsOneWidget);
+    expect(find.text('01/09 00:00 - 30/09 00:00'), findsOneWidget);
+    expect(find.text('10/06 00:00 - 10/08 00:00'), findsOneWidget);
     expect(find.text('Ongoing'), findsOneWidget);
     expect(find.text('Upcoming'), findsOneWidget);
     expect(find.text('Finished'), findsOneWidget);
@@ -803,6 +1033,63 @@ void main() {
 
     expect(buttons.elementAt(0).onPressed, isNotNull);
     expect(buttons.elementAt(1).onPressed, isNull);
+    expect(buttons.elementAt(2).onPressed, isNull);
+  });
+
+  testWidgets('Dharma online teaching status is derived from current time', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 24, 10),
+        onlineTeachingStore: () async => [
+          OnlineTeachingRow(
+            id: 'upcoming',
+            title: 'Upcoming Event',
+            practice: 'Future practice',
+            startDate: DateTime(2026, 8, 24, 11),
+            endDate: DateTime(2026, 8, 24, 12),
+            joinUrl: Uri.parse('https://us02web.zoom.us/j/9461447283'),
+            displayOrder: 1,
+            published: true,
+          ),
+          OnlineTeachingRow(
+            id: 'ongoing',
+            title: 'Ongoing Event',
+            practice: 'Current practice',
+            startDate: DateTime(2026, 8, 24, 9),
+            endDate: DateTime(2026, 8, 24, 11),
+            joinUrl: Uri.parse('https://us02web.zoom.us/j/9461447283'),
+            displayOrder: 2,
+            published: true,
+          ),
+          OnlineTeachingRow(
+            id: 'finished',
+            title: 'Finished Event',
+            practice: 'Past practice',
+            startDate: DateTime(2026, 8, 24, 8),
+            endDate: DateTime(2026, 8, 24, 9),
+            joinUrl: Uri.parse('https://us02web.zoom.us/j/9461447283'),
+            displayOrder: 3,
+            published: true,
+          ),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text('Dharma'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Upcoming'), findsOneWidget);
+    expect(find.text('Ongoing'), findsOneWidget);
+    expect(find.text('Finished'), findsOneWidget);
+
+    final buttons = tester.widgetList<FilledButton>(
+      find.widgetWithText(FilledButton, 'JOIN NOW'),
+    );
+
+    expect(buttons.elementAt(0).onPressed, isNull);
+    expect(buttons.elementAt(1).onPressed, isNotNull);
     expect(buttons.elementAt(2).onPressed, isNull);
   });
 }

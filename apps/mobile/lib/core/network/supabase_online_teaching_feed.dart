@@ -11,8 +11,7 @@ class SupabaseOnlineTeachingFeed {
           .from('online_teachings')
           .select()
           .eq('published', true)
-          .order('display_order', ascending: true)
-          .order('start_date', ascending: true),
+          .order('display_order', ascending: true),
     );
   }
 
