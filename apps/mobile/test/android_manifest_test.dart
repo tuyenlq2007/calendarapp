@@ -13,7 +13,7 @@ void main() {
     );
   });
 
-  test('Android launcher uses BK Calendar app name and branded icon', () async {
+  test('Android launcher uses Barom Kagyu Calendar app name and branded icon', () async {
     final manifest = File('android/app/src/main/AndroidManifest.xml')
         .readAsStringSync();
     final adaptiveIcon = File(
@@ -45,7 +45,7 @@ void main() {
       bottomRatio: 0.97,
     );
 
-    expect(manifest, contains('android:label="BK Calendar"'));
+    expect(manifest, contains('android:label="Barom Kagyu Calendar"'));
     expect(manifest, contains('android:icon="@mipmap/ic_launcher"'));
     expect(manifest, contains('android:roundIcon="@mipmap/ic_launcher_round"'));
     expect(
@@ -71,13 +71,13 @@ void main() {
     expect(await _alphaAt(foreground, 0, 0), 0);
   });
 
-  test('iOS bundle uses BK Calendar app name and icon', () {
+  test('iOS bundle uses Barom Kagyu Calendar app name and icon', () {
     final plist = File('ios/Runner/Info.plist').readAsStringSync();
     final marketingIcon = File(
       'ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png',
     );
 
-    expect(plist, contains('<string>BK Calendar</string>'));
+    expect(plist, contains('<string>Barom Kagyu Calendar</string>'));
     expect(marketingIcon.lengthSync(), greaterThan(10000));
   });
 }
