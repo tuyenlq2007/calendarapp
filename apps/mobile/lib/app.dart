@@ -124,15 +124,16 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     final localizations = AppLocalizations.of(context);
     final calendarMonth = _visibleCalendarMonth();
     final currentDate = _currentDateForDisplay();
+    final todayDisplayDate = _selectedDate ?? currentDate;
     final isViewingSelectedDay = _isViewingSelectedDay(currentDate);
-    final todayHeaderMonth = _selectedCalendarEntry == null
-        ? currentDate
-        : _selectedMonth;
     final screens = [
       TodayScreen(
         monthTitle:
-            '${_monthName(todayHeaderMonth.month)} ${todayHeaderMonth.year}',
-        entry: _selectedCalendarEntry ?? _currentDayEntry(),
+            '${_monthName(todayDisplayDate.month)} ${todayDisplayDate.year}',
+        displayDate: todayDisplayDate,
+        entry: _selectedDate == null
+            ? _currentDayEntry()
+            : _selectedCalendarEntry,
         showTodayButton: isViewingSelectedDay,
         onTodaySelected: _selectToday,
         onPreviousDaySelected: _selectPreviousDay,
@@ -315,7 +316,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   }
 
   DateTime _currentDateForDisplay() {
-    if (widget.currentDate == null && _calendarRows.isEmpty) {
+    if (widget.currentDate == null && _shouldUseSampleCalendar) {
       return DateTime(
         sampleCalendarEntries.year,
         sampleCalendarEntries.month,
@@ -326,12 +327,12 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     return _currentDate();
   }
 
-  CalendarEntry _currentDayEntry() {
+  CalendarEntry? _currentDayEntry() {
     final currentDate = _currentDateForDisplay();
     return _entryForDate(currentDate);
   }
 
-  CalendarEntry _entryForDate(DateTime currentDate) {
+  CalendarEntry? _entryForDate(DateTime currentDate) {
     for (final row in _calendarRows) {
       final date = row.gregorianDate;
       if (!row.isWithdrawn &&
@@ -342,26 +343,18 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
       }
     }
 
-    if (_calendarRows.isEmpty &&
+    if (_shouldUseSampleCalendar &&
         currentDate.year == sampleCalendarEntries.year &&
         currentDate.month == sampleCalendarEntries.month &&
         currentDate.day == sampleCalendarEntries.today.day) {
       return sampleCalendarEntries.today;
     }
 
-    return CalendarEntry(
-      day: currentDate.day,
-      weekday: _weekdayName(currentDate.weekday),
-      tibetanDateText: '',
-      titleEn: 'No practice day selected',
-      titleBo: '',
-      descriptionEn: 'No practice days for this day yet.',
-      lunarDay: currentDate.day,
-    );
+    return null;
   }
 
   CalendarMonth _visibleCalendarMonth() {
-    if (_calendarRows.isEmpty) {
+    if (_shouldUseSampleCalendar) {
       if (_selectedMonth.year == sampleCalendarEntries.year &&
           _selectedMonth.month == sampleCalendarEntries.month) {
         return sampleCalendarEntries;
@@ -371,6 +364,10 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     }
 
     return calendarMonthFromFeedRowsForMonth(_calendarRows, _selectedMonth);
+  }
+
+  bool get _shouldUseSampleCalendar {
+    return widget.calendarStore == null && _calendarRows.isEmpty;
   }
 
   void _selectPreviousMonth() {
@@ -468,16 +465,4 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     };
   }
 
-  String _weekdayName(int weekday) {
-    return switch (weekday) {
-      DateTime.monday => 'Monday',
-      DateTime.tuesday => 'Tuesday',
-      DateTime.wednesday => 'Wednesday',
-      DateTime.thursday => 'Thursday',
-      DateTime.friday => 'Friday',
-      DateTime.saturday => 'Saturday',
-      DateTime.sunday => 'Sunday',
-      _ => '',
-    };
-  }
 }

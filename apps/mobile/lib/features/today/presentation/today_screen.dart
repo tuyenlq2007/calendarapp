@@ -18,6 +18,7 @@ class TodayScreen extends StatefulWidget {
   const TodayScreen({
     super.key,
     required this.monthTitle,
+    required this.displayDate,
     required this.entry,
     this.showTodayButton = false,
     this.onTodaySelected,
@@ -26,7 +27,8 @@ class TodayScreen extends StatefulWidget {
   });
 
   final String monthTitle;
-  final CalendarEntry entry;
+  final DateTime displayDate;
+  final CalendarEntry? entry;
   final bool showTodayButton;
   final VoidCallback? onTodaySelected;
   final VoidCallback? onPreviousDaySelected;
@@ -84,11 +86,16 @@ class _TodayScreenState extends State<TodayScreen> {
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 18),
                 child: Column(
                   children: [
-                    _SelectedDayPanel(entry: widget.entry),
-                    const SizedBox(height: 10),
-                    _ElementPanel(entry: widget.entry),
-                    const SizedBox(height: 10),
-                    _TibetanDateDetails(entry: widget.entry),
+                    _SelectedDayPanel(
+                      displayDate: widget.displayDate,
+                      entry: widget.entry,
+                    ),
+                    if (widget.entry != null) ...[
+                      const SizedBox(height: 10),
+                      _ElementPanel(entry: widget.entry!),
+                      const SizedBox(height: 10),
+                      _TibetanDateDetails(entry: widget.entry!),
+                    ],
                   ],
                 ),
               ),
@@ -204,9 +211,10 @@ class _TopHeader extends StatelessWidget {
 }
 
 class _SelectedDayPanel extends StatelessWidget {
-  const _SelectedDayPanel({required this.entry});
+  const _SelectedDayPanel({required this.displayDate, required this.entry});
 
-  final CalendarEntry entry;
+  final DateTime displayDate;
+  final CalendarEntry? entry;
 
   @override
   Widget build(BuildContext context) {
@@ -217,45 +225,47 @@ class _SelectedDayPanel extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Expanded(child: _DateStack(entry: entry)),
+              Expanded(child: _DateStack(date: displayDate)),
               const SizedBox(width: 10),
               const _SacredSymbol(),
             ],
           ),
-          const SizedBox(height: 34),
-          Text(
-            entry.tibetanDateText,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: _textDark,
-              fontWeight: FontWeight.w700,
-              height: 1.16,
-              letterSpacing: 0,
+          if (entry != null) ...[
+            const SizedBox(height: 34),
+            Text(
+              entry!.tibetanDateText,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                color: _textDark,
+                fontWeight: FontWeight.w700,
+                height: 1.16,
+                letterSpacing: 0,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            entry.titleEn,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: _textDark,
-              fontWeight: FontWeight.w900,
-              height: 1.12,
-              letterSpacing: 0,
+            const SizedBox(height: 16),
+            Text(
+              entry!.titleEn,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: _textDark,
+                fontWeight: FontWeight.w900,
+                height: 1.12,
+                letterSpacing: 0,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            entry.descriptionEn,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: _green,
-              fontStyle: FontStyle.italic,
-              fontWeight: FontWeight.w800,
-              height: 1.2,
-              letterSpacing: 0,
+            const SizedBox(height: 8),
+            Text(
+              entry!.descriptionEn,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: _green,
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w800,
+                height: 1.2,
+                letterSpacing: 0,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -263,9 +273,9 @@ class _SelectedDayPanel extends StatelessWidget {
 }
 
 class _DateStack extends StatelessWidget {
-  const _DateStack({required this.entry});
+  const _DateStack({required this.date});
 
-  final CalendarEntry entry;
+  final DateTime date;
 
   @override
   Widget build(BuildContext context) {
@@ -276,7 +286,7 @@ class _DateStack extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              entry.weekday.toUpperCase(),
+              _weekdayName(date.weekday).toUpperCase(),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
@@ -293,7 +303,7 @@ class _DateStack extends StatelessWidget {
               fit: BoxFit.scaleDown,
               alignment: Alignment.center,
               child: Text(
-                '${entry.day}',
+                '${date.day}',
                 style: const TextStyle(
                   color: _deepBlue,
                   fontSize: 140,
@@ -307,6 +317,19 @@ class _DateStack extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _weekdayName(int weekday) {
+    return switch (weekday) {
+      DateTime.monday => 'Monday',
+      DateTime.tuesday => 'Tuesday',
+      DateTime.wednesday => 'Wednesday',
+      DateTime.thursday => 'Thursday',
+      DateTime.friday => 'Friday',
+      DateTime.saturday => 'Saturday',
+      DateTime.sunday => 'Sunday',
+      _ => '',
+    };
   }
 }
 

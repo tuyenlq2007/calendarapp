@@ -242,6 +242,43 @@ void main() {
     },
   );
 
+  testWidgets(
+    'today screen is clean when Supabase has no current-day entry',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(
+          currentDate: DateTime(2026, 8, 23),
+          calendarStore: () async => [
+            CalendarFeedRow(
+              id: 'other-day-entry',
+              version: 1,
+              gregorianDate: DateTime(2026, 8, 22),
+              tibetanDateText: '10th lunar day',
+              titleEn: 'Other Day Practice',
+              titleBo: 'Other Tibetan title',
+              descriptionEn: 'Practice for a different day.',
+              descriptionBo: '',
+              status: 'published',
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('August 2026'), findsOneWidget);
+      expect(find.text('23'), findsWidgets);
+      expect(find.text('Other Day Practice'), findsNothing);
+      expect(find.text('No practice day selected'), findsNothing);
+      expect(find.text('No practice days for this day yet.'), findsNothing);
+      expect(find.text('Water - Wind'), findsNothing);
+      expect(find.text('Negative Elemental Combination'), findsNothing);
+      expect(find.text('Date'), findsNothing);
+      expect(find.text('Month'), findsNothing);
+      expect(find.text('Year'), findsNothing);
+    },
+  );
+
   testWidgets('calendar month arrows move between adjacent months', (
     WidgetTester tester,
   ) async {
@@ -556,8 +593,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('No practice day selected'), findsOneWidget);
-      expect(find.text('No practice days for this day yet.'), findsOneWidget);
+      expect(find.text('No practice day selected'), findsNothing);
+      expect(find.text('No practice days for this day yet.'), findsNothing);
+      expect(find.text('Water - Wind'), findsNothing);
+      expect(find.text('Negative Elemental Combination'), findsNothing);
       expect(find.text('23'), findsWidgets);
     },
   );
@@ -974,6 +1013,7 @@ void main() {
   ) async {
     await tester.pumpWidget(
       BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 24, 10),
         onlineTeachingStore: () async => [
           OnlineTeachingRow(
             id: 'long-life-prayer',
