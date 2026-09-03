@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'core/theme/app_theme.dart';
@@ -25,6 +27,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
     this.teachingContentStore,
     this.onlineTeachingStore,
     this.communityStore,
+    this.autoSyncInterval = const Duration(hours: 1),
   });
 
   final Locale? locale;
@@ -35,6 +38,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
   final Future<List<TeachingContentRow>> Function()? teachingContentStore;
   final Future<List<OnlineTeachingRow>> Function()? onlineTeachingStore;
   final Future<List<CommunityEntryRow>> Function()? communityStore;
+  final Duration? autoSyncInterval;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +57,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
         teachingContentStore: teachingContentStore,
         onlineTeachingStore: onlineTeachingStore,
         communityStore: communityStore,
+        autoSyncInterval: autoSyncInterval,
         currentDate: currentDate,
       ),
     );
@@ -83,6 +88,7 @@ class CalendarHomeScreen extends StatefulWidget {
     this.teachingContentStore,
     this.onlineTeachingStore,
     this.communityStore,
+    this.autoSyncInterval = const Duration(hours: 1),
     this.currentDate,
   });
 
@@ -92,13 +98,15 @@ class CalendarHomeScreen extends StatefulWidget {
   final Future<List<TeachingContentRow>> Function()? teachingContentStore;
   final Future<List<OnlineTeachingRow>> Function()? onlineTeachingStore;
   final Future<List<CommunityEntryRow>> Function()? communityStore;
+  final Duration? autoSyncInterval;
   final DateTime? currentDate;
 
   @override
   State<CalendarHomeScreen> createState() => _CalendarHomeScreenState();
 }
 
-class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
+class _CalendarHomeScreenState extends State<CalendarHomeScreen>
+    with WidgetsBindingObserver {
   int _selectedIndex = 0;
   Set<ReminderCategory> _enabledReminderCategories = const {
     ReminderCategory.dailyPractice,
@@ -117,15 +125,33 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   List<OnlineTeachingRow> _onlineTeachings = const [];
   List<CommunityEntryRow> _communityEntries = const [];
   Set<String> _savedTeachingIds = const {};
+  Timer? _autoSyncTimer;
+  DateTime? _lastAutoSyncAttemptAt;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _lastSyncedAt = widget.initialLastSyncedAt;
     _loadStoredCalendar();
     _loadStoredTeachings();
     _loadOnlineTeachings();
     _loadCommunityEntries();
+    _startAutoSyncTimer();
+  }
+
+  @override
+  void dispose() {
+    _autoSyncTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _maybeAutoSync();
+    }
   }
 
   @override
@@ -226,6 +252,42 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   }
 
   Future<void> _retrySync() async {
+    await _syncAndRefresh(showFailureSnackBar: true);
+  }
+
+  void _startAutoSyncTimer() {
+    final interval = widget.autoSyncInterval;
+    if (widget.syncCalendar == null ||
+        interval == null ||
+        interval <= Duration.zero) {
+      return;
+    }
+
+    _autoSyncTimer = Timer.periodic(interval, (_) => _maybeAutoSync(force: true));
+  }
+
+  void _maybeAutoSync({bool force = false}) {
+    final interval = widget.autoSyncInterval;
+    if (widget.syncCalendar == null ||
+        interval == null ||
+        interval <= Duration.zero ||
+        _isSyncing) {
+      return;
+    }
+
+    final now = DateTime.now();
+    final lastAttempt = _lastAutoSyncAttemptAt;
+    if (!force &&
+        lastAttempt != null &&
+        now.difference(lastAttempt) < interval) {
+      return;
+    }
+
+    _lastAutoSyncAttemptAt = now;
+    unawaited(_syncAndRefresh());
+  }
+
+  Future<void> _syncAndRefresh({bool showFailureSnackBar = false}) async {
     final syncCalendar = widget.syncCalendar;
     if (syncCalendar == null || _isSyncing) return;
 
@@ -246,9 +308,11 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
       debugPrintStack(stackTrace: stackTrace);
       if (!mounted) return;
       setState(() => _isSyncing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context).syncFailed)),
-      );
+      if (showFailureSnackBar) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context).syncFailed)),
+        );
+      }
     }
   }
 

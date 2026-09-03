@@ -965,6 +965,65 @@ void main() {
     expect(find.text('Published from Supabase'), findsOneWidget);
   });
 
+  testWidgets('auto sync periodically refreshes Supabase-backed content', (
+    WidgetTester tester,
+  ) async {
+    var calendarRows = <CalendarFeedRow>[];
+    var communityRows = <CommunityEntryRow>[];
+
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 17),
+        calendarStore: () async => calendarRows,
+        communityStore: () async => communityRows,
+        autoSyncInterval: const Duration(minutes: 1),
+        syncCalendar: () async {
+          calendarRows = [
+            CalendarFeedRow(
+              id: 'auto-sync-entry',
+              version: 2,
+              gregorianDate: DateTime(2026, 8, 17),
+              tibetanDateText: '10th lunar day',
+              titleEn: 'Auto synced practice',
+              titleBo: 'Auto synced Tibetan title',
+              descriptionEn: 'Loaded by the scheduled sync.',
+              descriptionBo: '',
+              status: 'published',
+            ),
+          ];
+          communityRows = [
+            CommunityEntryRow(
+              id: 'auto-community-row',
+              type: CommunityEntryType.news,
+              title: 'Auto synced community news',
+              summary: 'Loaded by the scheduled sync.',
+              detail: '',
+              startsAt: null,
+              location: null,
+              contact: null,
+              displayOrder: 1,
+              published: true,
+            ),
+          ];
+          return DateTime(2026, 8, 17, 10);
+        },
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    expect(find.text('Auto synced practice'), findsNothing);
+
+    await tester.pump(const Duration(minutes: 1));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Auto synced practice'), findsOneWidget);
+
+    await tester.tap(find.text('Community'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Auto synced community news'), findsOneWidget);
+  });
+
   testWidgets('failed sync keeps the existing sync status timestamp', (
     WidgetTester tester,
   ) async {
