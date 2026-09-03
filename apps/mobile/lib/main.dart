@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
+import 'core/background/calendar_background_sync.dart';
 import 'core/network/supabase_calendar_feed.dart';
 import 'core/network/supabase_community_feed.dart';
 import 'core/network/supabase_online_teaching_feed.dart';
@@ -37,6 +38,11 @@ Future<void> main() async {
       Supabase.instance.client,
     );
     communityFeed = SupabaseCommunityFeed.fromClient(Supabase.instance.client);
+    await registerCalendarBackgroundSync(
+      scheduler: const WorkmanagerCalendarBackgroundScheduler(),
+      supabaseUrl: _supabaseUrl,
+      supabaseAnonKey: _supabaseAnonKey,
+    );
   }
 
   runApp(

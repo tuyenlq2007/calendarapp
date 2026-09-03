@@ -13,71 +13,91 @@ void main() {
     );
   });
 
-  test('Android launcher uses Barom Kagyu Calendar app name and branded icon', () async {
-    final manifest = File('android/app/src/main/AndroidManifest.xml')
-        .readAsStringSync();
-    final adaptiveIcon = File(
-      'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
-    );
-    final adaptiveRoundIcon = File(
-      'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml',
-    );
-    final adaptiveBackground = File(
-      'android/app/src/main/res/values/ic_launcher_background.xml',
-    );
-    final xxxhdpiIcon = File(
-      'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png',
-    );
-    final xxxhdpiForeground = File(
-      'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png',
-    );
-    final icon = await _decodeImage(xxxhdpiIcon);
-    final cornerPixel = await _pixelAt(icon, 0, 0);
-    final insetPixel = await _pixelAt(icon, 10, 10);
-    final whiteTextPixels = await _nearWhitePixelsInBand(
-      icon,
-      topRatio: 0.84,
-      bottomRatio: 0.97,
-    );
-    final maroonBackgroundPixels = await _nearMaroonPixelsInBand(
-      icon,
-      topRatio: 0.84,
-      bottomRatio: 0.97,
-    );
+  test(
+    'Android launcher uses Barom Kagyu Calendar app name and branded icon',
+    () async {
+      final manifest = File('android/app/src/main/AndroidManifest.xml')
+          .readAsStringSync();
+      final adaptiveIcon = File(
+        'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
+      );
+      final adaptiveRoundIcon = File(
+        'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml',
+      );
+      final adaptiveBackground = File(
+        'android/app/src/main/res/values/ic_launcher_background.xml',
+      );
+      final xxxhdpiIcon = File(
+        'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png',
+      );
+      final xxxhdpiForeground = File(
+        'android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.png',
+      );
+      final icon = await _decodeImage(xxxhdpiIcon);
+      final cornerPixel = await _pixelAt(icon, 0, 0);
+      final insetPixel = await _pixelAt(icon, 10, 10);
+      final whiteTextPixels = await _nearWhitePixelsInBand(
+        icon,
+        topRatio: 0.84,
+        bottomRatio: 0.97,
+      );
+      final maroonBackgroundPixels = await _nearMaroonPixelsInBand(
+        icon,
+        topRatio: 0.84,
+        bottomRatio: 0.97,
+      );
 
-    expect(manifest, contains('android:label="Barom Kagyu Calendar"'));
-    expect(manifest, contains('android:icon="@mipmap/ic_launcher"'));
-    expect(manifest, contains('android:roundIcon="@mipmap/ic_launcher_round"'));
-    expect(
-      adaptiveIcon.readAsStringSync(),
-      contains('@color/ic_launcher_background'),
-    );
-    expect(
-      adaptiveIcon.readAsStringSync(),
-      contains('@mipmap/ic_launcher_foreground'),
-    );
-    expect(
-      adaptiveRoundIcon.readAsStringSync(),
-      contains('@color/ic_launcher_background'),
-    );
-    expect(adaptiveBackground.readAsStringSync(), contains('#730005'));
-    expect(xxxhdpiIcon.lengthSync(), greaterThan(10000));
-    expect(xxxhdpiForeground.lengthSync(), greaterThan(10000));
-    expect(_isNearWhite(cornerPixel), isFalse);
-    expect(_isNearMaroon(insetPixel), isTrue);
-    expect(whiteTextPixels, lessThan(100));
-    expect(maroonBackgroundPixels, greaterThan(4500));
-    final foreground = await _decodeImage(xxxhdpiForeground);
-    expect(await _alphaAt(foreground, 0, 0), 0);
-  });
+      expect(manifest, contains('android:label="Barom Kagyu Calendar"'));
+      expect(manifest, contains('android:icon="@mipmap/ic_launcher"'));
+      expect(
+        manifest,
+        contains('android:roundIcon="@mipmap/ic_launcher_round"'),
+      );
+      expect(
+        adaptiveIcon.readAsStringSync(),
+        contains('@color/ic_launcher_background'),
+      );
+      expect(
+        adaptiveIcon.readAsStringSync(),
+        contains('@mipmap/ic_launcher_foreground'),
+      );
+      expect(
+        adaptiveRoundIcon.readAsStringSync(),
+        contains('@color/ic_launcher_background'),
+      );
+      expect(adaptiveBackground.readAsStringSync(), contains('#730005'));
+      expect(xxxhdpiIcon.lengthSync(), greaterThan(10000));
+      expect(xxxhdpiForeground.lengthSync(), greaterThan(10000));
+      expect(_isNearWhite(cornerPixel), isFalse);
+      expect(_isNearMaroon(insetPixel), isTrue);
+      expect(whiteTextPixels, lessThan(100));
+      expect(maroonBackgroundPixels, greaterThan(4500));
+      final foreground = await _decodeImage(xxxhdpiForeground);
+      expect(await _alphaAt(foreground, 0, 0), 0);
+    },
+  );
 
-  test('iOS bundle uses Barom Kagyu Calendar app name and icon', () {
+  test('iOS bundle uses Barom Kagyu Calendar app name and background sync', () {
     final plist = File('ios/Runner/Info.plist').readAsStringSync();
+    final appDelegate = File('ios/Runner/AppDelegate.swift').readAsStringSync();
     final marketingIcon = File(
       'ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png',
     );
 
     expect(plist, contains('<string>Barom Kagyu Calendar</string>'));
+    expect(plist, contains('<key>UIBackgroundModes</key>'));
+    expect(plist, contains('<string>processing</string>'));
+    expect(plist, contains('<key>BGTaskSchedulerPermittedIdentifiers</key>'));
+    expect(
+      plist,
+      contains('<string>barom_kagyu_calendar_background_sync</string>'),
+    );
+    expect(appDelegate, contains('import workmanager_apple'));
+    expect(appDelegate, contains('WorkmanagerPlugin.registerLaunchHandlers()'));
+    expect(
+      appDelegate,
+      contains('WorkmanagerPlugin.setPluginRegistrantCallback'),
+    );
     expect(marketingIcon.lengthSync(), greaterThan(10000));
   });
 }
