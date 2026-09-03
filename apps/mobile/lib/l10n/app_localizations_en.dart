@@ -37,6 +37,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get teachings => 'Dharma';
 
   @override
+  String get community => 'Community';
+
+  @override
   String get news => 'News';
 
   @override

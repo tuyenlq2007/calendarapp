@@ -4,6 +4,8 @@ import 'core/theme/app_theme.dart';
 import 'features/calendar/data/calendar_database.dart';
 import 'features/calendar/domain/calendar_entry.dart';
 import 'features/calendar/presentation/month_screen.dart';
+import 'features/community/data/community_database.dart';
+import 'features/community/presentation/community_screen.dart';
 import 'features/reminders/domain/reminder_category.dart';
 import 'features/settings/presentation/notification_settings_screen.dart';
 import 'features/teachings/data/online_teaching_database.dart';
@@ -22,6 +24,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
     this.initialLastSyncedAt,
     this.teachingContentStore,
     this.onlineTeachingStore,
+    this.communityStore,
   });
 
   final Locale? locale;
@@ -31,6 +34,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
   final DateTime? initialLastSyncedAt;
   final Future<List<TeachingContentRow>> Function()? teachingContentStore;
   final Future<List<OnlineTeachingRow>> Function()? onlineTeachingStore;
+  final Future<List<CommunityEntryRow>> Function()? communityStore;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +52,7 @@ class BaromKagyuCalendarApp extends StatelessWidget {
         initialLastSyncedAt: initialLastSyncedAt,
         teachingContentStore: teachingContentStore,
         onlineTeachingStore: onlineTeachingStore,
+        communityStore: communityStore,
         currentDate: currentDate,
       ),
     );
@@ -77,6 +82,7 @@ class CalendarHomeScreen extends StatefulWidget {
     this.initialLastSyncedAt,
     this.teachingContentStore,
     this.onlineTeachingStore,
+    this.communityStore,
     this.currentDate,
   });
 
@@ -85,6 +91,7 @@ class CalendarHomeScreen extends StatefulWidget {
   final DateTime? initialLastSyncedAt;
   final Future<List<TeachingContentRow>> Function()? teachingContentStore;
   final Future<List<OnlineTeachingRow>> Function()? onlineTeachingStore;
+  final Future<List<CommunityEntryRow>> Function()? communityStore;
   final DateTime? currentDate;
 
   @override
@@ -108,6 +115,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   CalendarEntry? _selectedCalendarEntry;
   List<TeachingContentRow> _teachingContent = sampleTeachingContent;
   List<OnlineTeachingRow> _onlineTeachings = const [];
+  List<CommunityEntryRow> _communityEntries = const [];
   Set<String> _savedTeachingIds = const {};
 
   @override
@@ -117,6 +125,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
     _loadStoredCalendar();
     _loadStoredTeachings();
     _loadOnlineTeachings();
+    _loadCommunityEntries();
   }
 
   @override
@@ -158,6 +167,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
         isActive: _selectedIndex == 2,
         onToggleSaved: _toggleSavedTeaching,
       ),
+      CommunityScreen(items: _communityEntries),
       NotificationSettingsScreen(
         enabled: _enabledReminderCategories,
         lastSyncedAt: _lastSyncedAt,
@@ -200,6 +210,11 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
                 label: localizations.teachings,
               ),
               NavigationDestination(
+                icon: const Icon(Icons.groups_outlined),
+                selectedIcon: const Icon(Icons.groups),
+                label: localizations.community,
+              ),
+              NavigationDestination(
                 icon: const Icon(Icons.more_horiz),
                 label: localizations.more,
               ),
@@ -225,6 +240,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
       await _loadStoredCalendar();
       await _loadStoredTeachings();
       await _loadOnlineTeachings();
+      await _loadCommunityEntries();
     } catch (error, stackTrace) {
       debugPrint('Calendar sync failed: $error');
       debugPrintStack(stackTrace: stackTrace);
@@ -330,6 +346,26 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
   CalendarEntry? _currentDayEntry() {
     final currentDate = _currentDateForDisplay();
     return _entryForDate(currentDate);
+  }
+
+  Future<void> _loadCommunityEntries() async {
+    final communityStore = widget.communityStore;
+    if (communityStore == null) return;
+
+    try {
+      final rows = await communityStore();
+      if (!mounted) return;
+      setState(() {
+        _communityEntries = rows;
+      });
+    } catch (error, stackTrace) {
+      debugPrint('Community sync failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (!mounted) return;
+      setState(() {
+        _communityEntries = const [];
+      });
+    }
   }
 
   CalendarEntry? _entryForDate(DateTime currentDate) {
@@ -464,5 +500,4 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen> {
       _ => '',
     };
   }
-
 }

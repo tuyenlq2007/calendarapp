@@ -37,6 +37,9 @@ class AppLocalizationsBo extends AppLocalizations {
   String get teachings => 'ཆོས་ཁྲིད།';
 
   @override
+  String get community => 'ཚོགས་པ།';
+
+  @override
   String get news => 'གསར་འགྱུར།';
 
   @override

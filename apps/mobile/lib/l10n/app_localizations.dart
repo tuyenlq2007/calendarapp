@@ -152,6 +152,12 @@ abstract class AppLocalizations {
   /// **'Dharma'**
   String get teachings;
 
+  /// Bottom navigation label for community news, events, and contact information.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get community;
+
   /// Reminder category label for news notifications.
   ///
   /// In en, this message translates to:

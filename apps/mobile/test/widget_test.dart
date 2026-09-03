@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mobile/app.dart';
 import 'package:mobile/features/calendar/data/calendar_database.dart';
+import 'package:mobile/features/community/data/community_database.dart';
 import 'package:mobile/features/teachings/data/online_teaching_database.dart';
 import 'package:mobile/features/teachings/data/teaching_content_database.dart';
 
@@ -242,42 +243,41 @@ void main() {
     },
   );
 
-  testWidgets(
-    'today screen is clean when Supabase has no current-day entry',
-    (WidgetTester tester) async {
-      await tester.pumpWidget(
-        BaromKagyuCalendarApp(
-          currentDate: DateTime(2026, 8, 23),
-          calendarStore: () async => [
-            CalendarFeedRow(
-              id: 'other-day-entry',
-              version: 1,
-              gregorianDate: DateTime(2026, 8, 22),
-              tibetanDateText: '10th lunar day',
-              titleEn: 'Other Day Practice',
-              titleBo: 'Other Tibetan title',
-              descriptionEn: 'Practice for a different day.',
-              descriptionBo: '',
-              status: 'published',
-            ),
-          ],
-        ),
-      );
+  testWidgets('today screen is clean when Supabase has no current-day entry', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 8, 23),
+        calendarStore: () async => [
+          CalendarFeedRow(
+            id: 'other-day-entry',
+            version: 1,
+            gregorianDate: DateTime(2026, 8, 22),
+            tibetanDateText: '10th lunar day',
+            titleEn: 'Other Day Practice',
+            titleBo: 'Other Tibetan title',
+            descriptionEn: 'Practice for a different day.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+        ],
+      ),
+    );
 
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-      expect(find.text('August 2026'), findsOneWidget);
-      expect(find.text('23'), findsWidgets);
-      expect(find.text('Other Day Practice'), findsNothing);
-      expect(find.text('No practice day selected'), findsNothing);
-      expect(find.text('No practice days for this day yet.'), findsNothing);
-      expect(find.text('Water - Wind'), findsNothing);
-      expect(find.text('Negative Elemental Combination'), findsNothing);
-      expect(find.text('Date'), findsNothing);
-      expect(find.text('Month'), findsNothing);
-      expect(find.text('Year'), findsNothing);
-    },
-  );
+    expect(find.text('August 2026'), findsOneWidget);
+    expect(find.text('23'), findsWidgets);
+    expect(find.text('Other Day Practice'), findsNothing);
+    expect(find.text('No practice day selected'), findsNothing);
+    expect(find.text('No practice days for this day yet.'), findsNothing);
+    expect(find.text('Water - Wind'), findsNothing);
+    expect(find.text('Negative Elemental Combination'), findsNothing);
+    expect(find.text('Date'), findsNothing);
+    expect(find.text('Month'), findsNothing);
+    expect(find.text('Year'), findsNothing);
+  });
 
   testWidgets('calendar month arrows move between adjacent months', (
     WidgetTester tester,
@@ -792,10 +792,103 @@ void main() {
     expect(find.text('Dharma'), findsWidgets);
     expect(tester.takeException(), isNull);
 
+    await tester.tap(find.text('Community'));
+    await tester.pumpAndSettle();
+    expect(find.text('Community'), findsWidgets);
+    expect(tester.takeException(), isNull);
+
     await tester.tap(find.text('More'));
     await tester.pumpAndSettle();
     expect(find.text('More'), findsWidgets);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('community tab shows news events monastery and contact details', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        communityStore: () async => [
+          CommunityEntryRow(
+            id: 'news-row',
+            type: CommunityEntryType.news,
+            title: 'Losar community gathering',
+            summary: 'New year prayers, offerings, and shared dedication.',
+            detail: 'Everyone is welcome.',
+            startsAt: null,
+            location: null,
+            contact: null,
+            displayOrder: 1,
+            published: true,
+          ),
+          CommunityEntryRow(
+            id: 'event-row',
+            type: CommunityEntryType.event,
+            title: 'Weekly meditation practice',
+            summary: 'Sundays at 9:00 AM with prayers and quiet sitting.',
+            detail: '',
+            startsAt: DateTime.utc(2026, 9, 6, 9),
+            location: 'Main shrine room',
+            contact: null,
+            displayOrder: 2,
+            published: true,
+          ),
+          CommunityEntryRow(
+            id: 'monastery-row',
+            type: CommunityEntryType.monastery,
+            title: 'Barom Kagyu monastery',
+            summary:
+                'Lineage practice center for teachings, prayers, and retreats.',
+            detail: '',
+            startsAt: null,
+            location: 'Barom Kagyu Dharma Center',
+            contact: null,
+            displayOrder: 3,
+            published: true,
+          ),
+          CommunityEntryRow(
+            id: 'contact-row',
+            type: CommunityEntryType.contact,
+            title: 'Contact',
+            summary: 'contact@baromkagyu.org',
+            detail: '',
+            startsAt: null,
+            location: null,
+            contact: 'contact@baromkagyu.org',
+            displayOrder: 4,
+            published: true,
+          ),
+        ],
+      ),
+    );
+
+    await tester.tap(find.text('Community'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Latest News'), findsOneWidget);
+    expect(find.text('Community Events'), findsOneWidget);
+    expect(find.text('Monastery Information'), findsOneWidget);
+    expect(find.text('Contact'), findsWidgets);
+    expect(find.text('Losar community gathering'), findsOneWidget);
+    expect(find.text('Weekly meditation practice'), findsOneWidget);
+    expect(find.text('Barom Kagyu monastery'), findsOneWidget);
+    expect(find.textContaining('contact@baromkagyu.org'), findsWidgets);
+  });
+
+  testWidgets('community tab is clean when Supabase has no published rows', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(communityStore: () async => []),
+    );
+
+    await tester.tap(find.text('Community'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Community'), findsWidgets);
+    expect(find.text('No community updates yet.'), findsOneWidget);
+    expect(find.text('Losar community gathering'), findsNothing);
+    expect(find.text('Weekly meditation practice'), findsNothing);
   });
 
   testWidgets('more tab exposes notification category settings', (

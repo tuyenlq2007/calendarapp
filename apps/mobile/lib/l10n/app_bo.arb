@@ -36,6 +36,10 @@
   "@teachings": {
     "description": "Reminder category label for teaching notifications."
   },
+  "community": "ཚོགས་པ།",
+  "@community": {
+    "description": "Bottom navigation label for community news, events, and contact information."
+  },
   "news": "གསར་འགྱུར།",
   "@news": {
     "description": "Reminder category label for news notifications."
