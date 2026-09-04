@@ -36,6 +36,10 @@ class CommunityEntryRow {
     required this.startsAt,
     required this.location,
     required this.contact,
+    this.websiteUrl,
+    this.address,
+    this.phone,
+    this.email,
     required this.displayOrder,
     required this.published,
   });
@@ -50,6 +54,10 @@ class CommunityEntryRow {
       startsAt: _nullableDateTime(json, 'starts_at'),
       location: _nullableString(json, 'location'),
       contact: _nullableString(json, 'contact'),
+      websiteUrl: _nullableString(json, 'website_url'),
+      address: _nullableString(json, 'address'),
+      phone: _nullableString(json, 'phone'),
+      email: _nullableString(json, 'email'),
       displayOrder: _integer(json, 'display_order'),
       published: _boolean(json, 'published'),
     )..validate();
@@ -63,6 +71,10 @@ class CommunityEntryRow {
   final DateTime? startsAt;
   final String? location;
   final String? contact;
+  final String? websiteUrl;
+  final String? address;
+  final String? phone;
+  final String? email;
   final int displayOrder;
   final bool published;
 
@@ -83,6 +95,17 @@ class CommunityEntryRow {
     }
     if (summary.trim().isEmpty) {
       throw const FormatException('community entry summary is required');
+    }
+    final link = websiteUrl;
+    if (link != null && link.trim().isNotEmpty) {
+      final uri = Uri.tryParse(link);
+      if (uri == null ||
+          uri.host.isEmpty ||
+          (uri.scheme != 'http' && uri.scheme != 'https')) {
+        throw const FormatException(
+          'community entry website_url must be an absolute http or https URL',
+        );
+      }
     }
   }
 

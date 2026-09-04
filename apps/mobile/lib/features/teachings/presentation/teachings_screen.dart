@@ -320,12 +320,15 @@ class _BilingualTeachingList extends StatelessWidget {
         const SizedBox(height: 20),
         Text('Bilingual Dharma', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
-        for (final item in items)
-          _TeachingCard(
-            item: item,
-            isSaved: savedIds.contains(item.id),
-            onToggleSaved: onToggleSaved,
-          ),
+        if (items.isEmpty)
+          const Text('No Dharma content yet.')
+        else
+          for (final item in items)
+            _TeachingCard(
+              item: item,
+              isSaved: savedIds.contains(item.id),
+              onToggleSaved: onToggleSaved,
+            ),
       ],
     );
   }

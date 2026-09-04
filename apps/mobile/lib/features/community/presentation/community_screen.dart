@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../data/community_database.dart';
@@ -68,6 +69,7 @@ class _CommunityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final websiteUrl = _websiteUri(item.websiteUrl);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -78,63 +80,98 @@ class _CommunityCard extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DecoratedBox(
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: _communityGold,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Icon(
-                  _iconFor(item.type),
-                  color: _communityRed,
-                  size: 24,
+        child: InkWell(
+          onTap: websiteUrl == null
+              ? null
+              : () =>
+                    launchUrl(websiteUrl, mode: LaunchMode.externalApplication),
+          borderRadius: BorderRadius.circular(8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DecoratedBox(
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _communityGold,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Icon(
+                    _iconFor(item.type),
+                    color: _communityRed,
+                    size: 24,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.title,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: _communityRed,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: _communityRed,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(item.summary),
-                  if (item.formattedStart != null) ...[
-                    const SizedBox(height: 8),
-                    _MetadataLine(
-                      icon: Icons.schedule,
-                      label: item.formattedStart!,
-                    ),
+                    const SizedBox(height: 6),
+                    Text(item.summary),
+                    if (item.formattedStart != null) ...[
+                      const SizedBox(height: 8),
+                      _MetadataLine(
+                        icon: Icons.schedule,
+                        label: item.formattedStart!,
+                      ),
+                    ],
+                    if (_hasText(item.location)) ...[
+                      const SizedBox(height: 8),
+                      _MetadataLine(
+                        icon: Icons.location_on_outlined,
+                        label: item.location!,
+                      ),
+                    ],
+                    if (_hasText(item.address)) ...[
+                      const SizedBox(height: 8),
+                      _MetadataLine(
+                        icon: Icons.map_outlined,
+                        label: item.address!,
+                      ),
+                    ],
+                    if (_hasText(item.phone)) ...[
+                      const SizedBox(height: 8),
+                      _MetadataLine(
+                        icon: Icons.phone_outlined,
+                        label: item.phone!,
+                      ),
+                    ],
+                    if (_hasText(item.contact)) ...[
+                      const SizedBox(height: 8),
+                      _MetadataLine(
+                        icon: Icons.email_outlined,
+                        label: item.contact!,
+                      ),
+                    ],
+                    if (_hasText(item.email) && item.email != item.contact) ...[
+                      const SizedBox(height: 8),
+                      _MetadataLine(
+                        icon: Icons.alternate_email,
+                        label: item.email!,
+                      ),
+                    ],
+                    if (websiteUrl != null) ...[
+                      const SizedBox(height: 8),
+                      _MetadataLine(
+                        icon: Icons.open_in_new,
+                        label: _displayWebsite(websiteUrl),
+                      ),
+                    ],
                   ],
-                  if (item.location != null) ...[
-                    const SizedBox(height: 8),
-                    _MetadataLine(
-                      icon: Icons.location_on_outlined,
-                      label: item.location!,
-                    ),
-                  ],
-                  if (item.contact != null) ...[
-                    const SizedBox(height: 8),
-                    _MetadataLine(
-                      icon: Icons.email_outlined,
-                      label: item.contact!,
-                    ),
-                  ],
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -147,6 +184,22 @@ class _CommunityCard extends StatelessWidget {
       CommunityEntryType.monastery => Icons.temple_buddhist_outlined,
       CommunityEntryType.contact => Icons.email_outlined,
     };
+  }
+
+  bool _hasText(String? value) => value != null && value.trim().isNotEmpty;
+
+  Uri? _websiteUri(String? value) {
+    if (!_hasText(value)) return null;
+    final uri = Uri.tryParse(value!.trim());
+    if (uri == null || (uri.scheme != 'http' && uri.scheme != 'https')) {
+      return null;
+    }
+    return uri;
+  }
+
+  String _displayWebsite(Uri uri) {
+    final path = uri.path == '/' ? '' : uri.path;
+    return '${uri.host}$path';
   }
 }
 

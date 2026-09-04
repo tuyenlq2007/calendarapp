@@ -121,7 +121,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen>
   List<CalendarFeedRow> _calendarRows = const [];
   DateTime? _selectedDate;
   CalendarEntry? _selectedCalendarEntry;
-  List<TeachingContentRow> _teachingContent = sampleTeachingContent;
+  List<TeachingContentRow> _teachingContent = const [];
   List<OnlineTeachingRow> _onlineTeachings = const [];
   List<CommunityEntryRow> _communityEntries = const [];
   Set<String> _savedTeachingIds = const {};
@@ -263,7 +263,10 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen>
       return;
     }
 
-    _autoSyncTimer = Timer.periodic(interval, (_) => _maybeAutoSync(force: true));
+    _autoSyncTimer = Timer.periodic(
+      interval,
+      (_) => _maybeAutoSync(force: true),
+    );
   }
 
   void _maybeAutoSync({bool force = false}) {
@@ -339,7 +342,6 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen>
 
     final rows = await teachingContentStore();
     if (!mounted) return;
-    if (rows.isEmpty) return;
     setState(() {
       _teachingContent = rows;
     });

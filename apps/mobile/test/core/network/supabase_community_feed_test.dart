@@ -38,6 +38,10 @@ void main() {
         'starts_at': null,
         'location': null,
         'contact': 'contact@baromkagyu.org',
+        'website_url': 'https://baromkagyu.org',
+        'address': '123 Dharma Road',
+        'phone': '+1 555 123 4567',
+        'email': 'office@baromkagyu.org',
         'display_order': 3,
         'published': true,
       },
@@ -50,6 +54,10 @@ void main() {
       _localDateTimeLabel(DateTime.utc(2026, 9, 6, 9)),
     );
     expect(page.rows.last.contact, 'contact@baromkagyu.org');
+    expect(page.rows.last.websiteUrl, 'https://baromkagyu.org');
+    expect(page.rows.last.address, '123 Dharma Road');
+    expect(page.rows.last.phone, '+1 555 123 4567');
+    expect(page.rows.last.email, 'office@baromkagyu.org');
   });
 
   test('community rows require supported type and published flag', () {

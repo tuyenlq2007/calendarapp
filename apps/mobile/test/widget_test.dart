@@ -882,6 +882,10 @@ void main() {
             startsAt: null,
             location: 'Barom Kagyu Dharma Center',
             contact: null,
+            websiteUrl: 'https://baromkagyu.org/monastery',
+            address: '123 Dharma Road',
+            phone: '+1 555 123 4567',
+            email: 'monastery@baromkagyu.org',
             displayOrder: 3,
             published: true,
           ),
@@ -894,6 +898,10 @@ void main() {
             startsAt: null,
             location: null,
             contact: 'contact@baromkagyu.org',
+            websiteUrl: 'https://baromkagyu.org/contact',
+            address: '456 Practice Street',
+            phone: '+1 555 765 4321',
+            email: 'contact@baromkagyu.org',
             displayOrder: 4,
             published: true,
           ),
@@ -912,6 +920,13 @@ void main() {
     expect(find.text('Weekly meditation practice'), findsOneWidget);
     expect(find.text('Barom Kagyu monastery'), findsOneWidget);
     expect(find.textContaining('contact@baromkagyu.org'), findsWidgets);
+    expect(find.text('123 Dharma Road'), findsOneWidget);
+    expect(find.text('+1 555 123 4567'), findsOneWidget);
+    expect(find.text('monastery@baromkagyu.org'), findsOneWidget);
+    expect(find.text('baromkagyu.org/monastery'), findsOneWidget);
+    expect(find.text('456 Practice Street'), findsOneWidget);
+    expect(find.text('+1 555 765 4321'), findsOneWidget);
+    expect(find.text('baromkagyu.org/contact'), findsOneWidget);
   });
 
   testWidgets('community tab is clean when Supabase has no published rows', (
@@ -1166,7 +1181,7 @@ void main() {
     expect(find.text('Saved offline'), findsOneWidget);
   });
 
-  testWidgets('teachings tab keeps sample content before sync data exists', (
+  testWidgets('teachings tab stays empty before sync data exists', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -1176,11 +1191,12 @@ void main() {
     await tester.tap(find.text('Dharma'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Refuge Practice'), findsOneWidget);
-    expect(find.text('Lineage Teaching Video'), findsOneWidget);
+    expect(find.text('No Dharma content yet.'), findsOneWidget);
+    expect(find.text('Refuge Practice'), findsNothing);
+    expect(find.text('Lineage Teaching Video'), findsNothing);
   });
 
-  testWidgets('teachings tab keeps fallback content when online load fails', (
+  testWidgets('teachings tab stays empty when online load fails', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(
@@ -1195,7 +1211,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Bilingual Dharma'), findsOneWidget);
-    expect(find.text('Refuge Practice'), findsOneWidget);
+    expect(find.text('No Dharma content yet.'), findsOneWidget);
+    expect(find.text('Refuge Practice'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
