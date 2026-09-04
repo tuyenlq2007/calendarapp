@@ -103,6 +103,8 @@ class SharedPreferencesCalendarStore implements CalendarStore {
           'element_pair_en': row.elementPairEn,
           'element_combination_title_en': row.elementCombinationTitleEn,
           'element_description_en': row.elementDescriptionEn,
+          'day_number_text': row.dayNumberText,
+          'day_element_animal_en': row.dayElementAnimalEn,
           'month_number_text': row.monthNumberText,
           'month_element_animal_en': row.monthElementAnimalEn,
           'year_number_text': row.yearNumberText,

@@ -123,6 +123,33 @@ void main() {
     expect(storedRow.yearNumberText, '2153');
     expect(storedRow.yearElementAnimalEn, 'Fire Horse');
   });
+
+  test('persists Tibetan day detail metadata for published rows', () async {
+    final preferences = SharedPreferencesAsync();
+    final store = SharedPreferencesCalendarStore(preferences);
+
+    await store.upsertOrWithdraw(
+      CalendarFeedRow.fromJson({
+        'id': 'entry',
+        'version': 1,
+        'gregorian_date': '2026-08-17',
+        'tibetan_date_text': '10th lunar day',
+        'title_en': 'Guru Rinpoche day',
+        'title_bo': 'Published Tibetan title',
+        'description_en': '',
+        'description_bo': '',
+        'day_number_text': '10',
+        'day_element_animal_en': 'Earth Dragon',
+        'status': 'published',
+      }),
+    );
+
+    final restartedStore = SharedPreferencesCalendarStore(preferences);
+    final storedRow = (await restartedStore.publishedEntries()).single;
+
+    expect(storedRow.dayNumberText, '10');
+    expect(storedRow.dayElementAnimalEn, 'Earth Dragon');
+  });
 }
 
 CalendarFeedRow row(String id, {required String status}) {

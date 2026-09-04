@@ -12,6 +12,8 @@ class CalendarEntry {
     this.elementPairEn = '',
     this.elementCombinationTitleEn = '',
     this.elementDescriptionEn = '',
+    this.dayNumberText = '',
+    this.dayElementAnimalEn = '',
     this.monthNumberText = '',
     this.monthElementAnimalEn = '',
     this.yearNumberText = '',
@@ -31,6 +33,8 @@ class CalendarEntry {
   final String elementPairEn;
   final String elementCombinationTitleEn;
   final String elementDescriptionEn;
+  final String dayNumberText;
+  final String dayElementAnimalEn;
   final String monthNumberText;
   final String monthElementAnimalEn;
   final String yearNumberText;
@@ -79,6 +83,8 @@ CalendarEntry calendarEntryFromFeedRow(CalendarFeedRow row) {
     elementPairEn: row.elementPairEn,
     elementCombinationTitleEn: row.elementCombinationTitleEn,
     elementDescriptionEn: row.elementDescriptionEn,
+    dayNumberText: row.dayNumberText,
+    dayElementAnimalEn: row.dayElementAnimalEn,
     monthNumberText: row.monthNumberText,
     monthElementAnimalEn: row.monthElementAnimalEn,
     yearNumberText: row.yearNumberText,

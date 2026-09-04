@@ -46,6 +46,8 @@ class CalendarFeedRow implements CalendarFeedEntry {
     this.elementPairEn = '',
     this.elementCombinationTitleEn = '',
     this.elementDescriptionEn = '',
+    this.dayNumberText = '',
+    this.dayElementAnimalEn = '',
     this.monthNumberText = '',
     this.monthElementAnimalEn = '',
     this.yearNumberText = '',
@@ -70,6 +72,8 @@ class CalendarFeedRow implements CalendarFeedEntry {
         'element_combination_title_en',
       ),
       elementDescriptionEn: _optionalString(json, 'element_description_en'),
+      dayNumberText: _optionalString(json, 'day_number_text'),
+      dayElementAnimalEn: _optionalString(json, 'day_element_animal_en'),
       monthNumberText: _optionalString(json, 'month_number_text'),
       monthElementAnimalEn: _optionalString(json, 'month_element_animal_en'),
       yearNumberText: _optionalString(json, 'year_number_text'),
@@ -94,6 +98,8 @@ class CalendarFeedRow implements CalendarFeedEntry {
   final String elementPairEn;
   final String elementCombinationTitleEn;
   final String elementDescriptionEn;
+  final String dayNumberText;
+  final String dayElementAnimalEn;
   final String monthNumberText;
   final String monthElementAnimalEn;
   final String yearNumberText;
@@ -150,6 +156,8 @@ class CalendarFeedRow implements CalendarFeedEntry {
     String? elementPairEn,
     String? elementCombinationTitleEn,
     String? elementDescriptionEn,
+    String? dayNumberText,
+    String? dayElementAnimalEn,
     String? monthNumberText,
     String? monthElementAnimalEn,
     String? yearNumberText,
@@ -169,6 +177,8 @@ class CalendarFeedRow implements CalendarFeedEntry {
       elementCombinationTitleEn:
           elementCombinationTitleEn ?? this.elementCombinationTitleEn,
       elementDescriptionEn: elementDescriptionEn ?? this.elementDescriptionEn,
+      dayNumberText: dayNumberText ?? this.dayNumberText,
+      dayElementAnimalEn: dayElementAnimalEn ?? this.dayElementAnimalEn,
       monthNumberText: monthNumberText ?? this.monthNumberText,
       monthElementAnimalEn: monthElementAnimalEn ?? this.monthElementAnimalEn,
       yearNumberText: yearNumberText ?? this.yearNumberText,

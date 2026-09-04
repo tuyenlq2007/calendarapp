@@ -429,9 +429,14 @@ class _TibetanDateDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateSubtitle = entry.elementPairEn.trim().isEmpty
-        ? entry.tibetanDateText
-        : entry.elementPairEn;
+    final dateValue = entry.dayNumberText.trim().isEmpty
+        ? '${entry.lunarDay}'
+        : entry.dayNumberText;
+    final dateSubtitle = entry.dayElementAnimalEn.trim().isEmpty
+        ? (entry.elementPairEn.trim().isEmpty
+              ? entry.tibetanDateText
+              : entry.elementPairEn)
+        : entry.dayElementAnimalEn;
     final monthValue = entry.monthNumberText.trim().isEmpty
         ? '7'
         : entry.monthNumberText;
@@ -454,7 +459,7 @@ class _TibetanDateDetails extends StatelessWidget {
             Expanded(
               child: _MetaCell(
                 label: 'Date',
-                value: '${entry.lunarDay}',
+                value: dateValue,
                 subtitle: dateSubtitle,
               ),
             ),

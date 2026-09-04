@@ -158,6 +158,45 @@ void main() {
   );
 
   testWidgets(
+    'today screen uses database-backed day metadata in the bottom Date cell',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(
+          currentDate: DateTime(2026, 8, 24),
+          calendarStore: () async => [
+            CalendarFeedRow.fromJson({
+              'id': 'day-metadata-entry',
+              'version': 1,
+              'gregorian_date': '2026-08-24',
+              'tibetan_date_text': '10th lunar day',
+              'title_en': 'Day Metadata Practice',
+              'title_bo': 'Published Tibetan title',
+              'description_en': 'Practice with day metadata.',
+              'description_bo': '',
+              'element_pair_en': 'Water - Water',
+              'day_number_text': '10',
+              'day_element_animal_en': 'Earth Dragon',
+              'month_number_text': '7',
+              'month_element_animal_en': 'Fire Dog',
+              'year_number_text': '2153',
+              'year_element_animal_en': 'Fire Horse',
+              'status': 'published',
+            }),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Day Metadata Practice'), findsOneWidget);
+      expect(find.text('10'), findsOneWidget);
+      expect(find.text('Earth Dragon'), findsOneWidget);
+      expect(find.text('Water - Water'), findsOneWidget);
+      expect(find.text('24'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'month tab shows a seven column calendar grid with practice days',
     (WidgetTester tester) async {
       await tester.pumpWidget(

@@ -30,6 +30,29 @@ void main() {
     expect(row.yearElementAnimalEn, 'Fire Horse');
   });
 
+  test('calendar change page parses Tibetan day detail metadata fields', () {
+    final page = CalendarChangePage.fromJsonRows([
+      {
+        'id': 'day-metadata-entry',
+        'version': 9,
+        'gregorian_date': '2026-08-24',
+        'tibetan_date_text': '10th lunar day',
+        'title_en': 'Guru Rinpoche day',
+        'title_bo': 'Published Tibetan title',
+        'description_en': 'Practice day',
+        'description_bo': '',
+        'day_number_text': '10',
+        'day_element_animal_en': 'Earth Dragon',
+        'status': 'published',
+      },
+    ]);
+
+    final row = page.entries.single as CalendarFeedRow;
+
+    expect(row.dayNumberText, '10');
+    expect(row.dayElementAnimalEn, 'Earth Dragon');
+  });
+
   test('calendar change page parses published and archived feed rows', () {
     final page = CalendarChangePage.fromJsonRows([
       {
