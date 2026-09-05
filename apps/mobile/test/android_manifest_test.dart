@@ -176,7 +176,7 @@ bool _isNearIconBlue(int rgba) {
 }
 
 int _logoTopInset(int size) {
-  final logoSize = (size * 0.76).round();
+  final logoSize = (size * 0.60).round();
   return ((size - logoSize) / 2).round();
 }
 
