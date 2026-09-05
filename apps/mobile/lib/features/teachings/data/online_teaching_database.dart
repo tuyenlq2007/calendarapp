@@ -32,6 +32,7 @@ class OnlineTeachingRow {
     required this.practice,
     required this.startDate,
     required this.endDate,
+    this.imageUrl = '',
     // Compatibility for old callers while status migrates to a derived value.
     OnlineTeachingStatus? status,
     required this.joinUrl,
@@ -51,6 +52,7 @@ class OnlineTeachingRow {
         fallbackKey: 'end_date',
         legacyDateEndOfDay: true,
       ),
+      imageUrl: _optionalString(json, 'image_url'),
       joinUrl: Uri.parse(_string(json, 'join_url')),
       displayOrder: _integer(json, 'display_order'),
       published: _boolean(json, 'published'),
@@ -62,6 +64,7 @@ class OnlineTeachingRow {
   final String practice;
   final DateTime startDate;
   final DateTime endDate;
+  final String imageUrl;
   final Uri joinUrl;
   final int displayOrder;
   final bool published;
@@ -96,6 +99,14 @@ class OnlineTeachingRow {
     if (!joinUrl.hasScheme || joinUrl.host.isEmpty) {
       throw const FormatException('online teaching join URL is invalid');
     }
+    if (imageUrl.trim().isNotEmpty) {
+      final parsedImageUrl = Uri.tryParse(imageUrl);
+      if (parsedImageUrl == null ||
+          !parsedImageUrl.hasScheme ||
+          parsedImageUrl.host.isEmpty) {
+        throw const FormatException('online teaching image URL is invalid');
+      }
+    }
   }
 
   static String _formatDayMonth(DateTime date) {
@@ -113,10 +124,33 @@ class OnlineTeachingRow {
   static String _formatLocalDateTime(DateTime date) {
     final local = date.toLocal();
     final day = local.day.toString().padLeft(2, '0');
-    final month = local.month.toString().padLeft(2, '0');
-    final hour = local.hour.toString().padLeft(2, '0');
+    final month = _monthAbbreviation(local.month);
+    final hour = _formatHour12(local.hour);
     final minute = local.minute.toString().padLeft(2, '0');
-    return '$day/$month $hour:$minute';
+    final period = local.hour < 12 ? 'AM' : 'PM';
+    return '$month $day $hour:$minute $period';
+  }
+
+  static int _formatHour12(int hour) {
+    final normalized = hour % 12;
+    return normalized == 0 ? 12 : normalized;
+  }
+
+  static String _monthAbbreviation(int month) {
+    return const [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ][month - 1];
   }
 
   static DateTime _dateTime(
@@ -145,6 +179,13 @@ class OnlineTeachingRow {
 
   static String _string(Map<String, Object?> json, String key) {
     final value = json[key];
+    if (value is String) return value;
+    throw FormatException('online teaching field $key must be a string');
+  }
+
+  static String _optionalString(Map<String, Object?> json, String key) {
+    final value = json[key];
+    if (value == null) return '';
     if (value is String) return value;
     throw FormatException('online teaching field $key must be a string');
   }

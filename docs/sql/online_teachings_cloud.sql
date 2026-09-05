@@ -5,6 +5,7 @@ create table if not exists public.online_teachings (
   start_datetime timestamptz not null,
   end_datetime timestamptz not null,
   join_url text not null default '',
+  image_url text not null default '',
   display_order integer not null default 0,
   published boolean not null default false,
   updated_at timestamptz not null default now(),
@@ -26,6 +27,9 @@ alter table public.online_teachings
 
 alter table public.online_teachings
   add column if not exists end_datetime timestamptz;
+
+alter table public.online_teachings
+  add column if not exists image_url text not null default '';
 
 do $$
 begin
@@ -103,6 +107,7 @@ insert into public.online_teachings (
   start_datetime,
   end_datetime,
   join_url,
+  image_url,
   display_order,
   published
 ) values
@@ -113,6 +118,7 @@ insert into public.online_teachings (
     timestamptz '2026-07-06 00:00:00+00',
     timestamptz '2026-12-31 23:59:59+00',
     'https://us02web.zoom.us/j/9461447283?pwd=ck01U3B1ZERFd1R1d0FNOERGNzJoQT09',
+    '',
     1,
     true
   ),
@@ -123,6 +129,7 @@ insert into public.online_teachings (
     timestamptz '2026-09-01 00:00:00+00',
     timestamptz '2026-09-30 23:59:59+00',
     'https://us02web.zoom.us/j/9461447283?pwd=ck01U3B1ZERFd1R1d0FNOERGNzJoQT09',
+    '',
     2,
     true
   ),
@@ -133,6 +140,7 @@ insert into public.online_teachings (
     timestamptz '2026-06-10 00:00:00+00',
     timestamptz '2026-08-10 23:59:59+00',
     'https://us02web.zoom.us/j/9461447283?pwd=ck01U3B1ZERFd1R1d0FNOERGNzJoQT09',
+    '',
     3,
     true
   )
@@ -142,6 +150,7 @@ on conflict (id) do update set
   start_datetime = excluded.start_datetime,
   end_datetime = excluded.end_datetime,
   join_url = excluded.join_url,
+  image_url = excluded.image_url,
   display_order = excluded.display_order,
   published = excluded.published,
   updated_at = now();

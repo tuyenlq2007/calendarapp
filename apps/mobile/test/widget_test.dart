@@ -1229,6 +1229,7 @@ void main() {
             practice: 'Recite the Sutra of Boundless Life and Wisdom',
             startDate: DateTime(2026, 7, 6),
             endDate: DateTime(2026, 12, 31),
+            imageUrl: 'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG',
             joinUrl: Uri.parse('https://us02web.zoom.us/j/9461447283'),
             displayOrder: 1,
             published: true,
@@ -1266,10 +1267,36 @@ void main() {
       find.text('Prayer for the Long Life of His Holiness'),
       findsOneWidget,
     );
-    expect(find.text('Practice:'), findsWidgets);
-    expect(find.text('06/07 00:00 - 31/12 00:00'), findsOneWidget);
-    expect(find.text('01/09 00:00 - 30/09 00:00'), findsOneWidget);
-    expect(find.text('10/06 00:00 - 10/08 00:00'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('online-teaching-image-long-life-prayer')),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<Image>(
+            find.byKey(
+              const ValueKey('online-teaching-image-long-life-prayer'),
+            ),
+          )
+          .fit,
+      BoxFit.contain,
+    );
+    final imageRect = tester.getRect(
+      find.byKey(const ValueKey('online-teaching-image-long-life-prayer')),
+    );
+    final titleRect = tester.getRect(
+      find.text('Prayer for the Long Life of His Holiness'),
+    );
+    final statusRect = tester.getRect(find.text('Ongoing'));
+
+    expect(imageRect.width, greaterThanOrEqualTo(320));
+    expect(imageRect.height, greaterThanOrEqualTo(220));
+    expect(imageRect.bottom, lessThan(titleRect.top));
+    expect(statusRect.top, greaterThan(titleRect.bottom));
+    expect(find.text('Practice:'), findsNothing);
+    expect(find.text('Jul 06 12:00 AM - Dec 31 12:00 AM'), findsOneWidget);
+    expect(find.text('Sep 01 12:00 AM - Sep 30 12:00 AM'), findsOneWidget);
+    expect(find.text('Jun 10 12:00 AM - Aug 10 12:00 AM'), findsOneWidget);
     expect(find.text('Ongoing'), findsOneWidget);
     expect(find.text('Upcoming'), findsOneWidget);
     expect(find.text('Finished'), findsOneWidget);

@@ -13,6 +13,7 @@ void main() {
         'end_date': '2026-12-31',
         'status': 'ongoing',
         'join_url': 'https://us02web.zoom.us/j/9461447283?pwd=ck01U3B1ZERFd1R1d0FNOERGNzJoQT09',
+        'image_url': 'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG',
         'display_order': 1,
         'published': true,
       },
@@ -21,13 +22,17 @@ void main() {
     expect(page.rows, hasLength(1));
     expect(page.rows.single.title, 'Prayer for the Long Life of His Holiness');
     expect(
+      page.rows.single.imageUrl,
+      'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG',
+    );
+    expect(
       page.rows.single.statusAt(DateTime(2026, 8, 24)),
       OnlineTeachingStatus.ongoing,
     );
     expect(page.rows.single.formattedDateRange, '06/07 - 31/12/2026');
     expect(
       page.rows.single.formattedLocalDateTimeRange,
-      '06/07 00:00 - 31/12 23:59',
+      'Jul 06 12:00 AM - Dec 31 11:59 PM',
     );
   });
 
@@ -73,7 +78,10 @@ void main() {
     );
     expect(row.statusAt(DateTime(2027, 1, 1)), OnlineTeachingStatus.finished);
     expect(row.formattedDateRange, '06/07 - 31/12/2026');
-    expect(row.formattedLocalDateTimeRange, '06/07 00:00 - 31/12 23:59');
+    expect(
+      row.formattedLocalDateTimeRange,
+      'Jul 06 12:00 AM - Dec 31 11:59 PM',
+    );
   });
 
   test('derived status changes at exact start and end datetimes', () {
@@ -130,8 +138,32 @@ void main() {
 
 String _localDateTimeLabel(DateTime dateTime) {
   final local = dateTime.toLocal();
-  return '${_twoDigits(local.day)}/${_twoDigits(local.month)} '
-      '${_twoDigits(local.hour)}:${_twoDigits(local.minute)}';
+  return '${_monthAbbreviation(local.month)} ${_twoDigits(local.day)} '
+      '${_hour12(local.hour)}:${_twoDigits(local.minute)} ${_period(local.hour)}';
 }
 
 String _twoDigits(int value) => value.toString().padLeft(2, '0');
+
+int _hour12(int hour) {
+  final normalized = hour % 12;
+  return normalized == 0 ? 12 : normalized;
+}
+
+String _period(int hour) => hour < 12 ? 'AM' : 'PM';
+
+String _monthAbbreviation(int month) {
+  return const [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ][month - 1];
+}

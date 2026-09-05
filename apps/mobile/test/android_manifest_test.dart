@@ -36,12 +36,7 @@ void main() {
       final icon = await _decodeImage(xxxhdpiIcon);
       final cornerPixel = await _pixelAt(icon, 0, 0);
       final insetPixel = await _pixelAt(icon, 10, 10);
-      final whiteTextPixels = await _nearWhitePixelsInBand(
-        icon,
-        topRatio: 0.84,
-        bottomRatio: 0.97,
-      );
-      final maroonBackgroundPixels = await _nearMaroonPixelsInBand(
+      final blueBackgroundPixels = await _nearIconBluePixelsInBand(
         icon,
         topRatio: 0.84,
         bottomRatio: 0.97,
@@ -49,6 +44,11 @@ void main() {
 
       expect(manifest, contains('android:label="Barom Kagyu Calendar"'));
       expect(manifest, contains('android:icon="@mipmap/ic_launcher"'));
+      expect(
+        manifest,
+        contains('android:name="io.flutter.embedding.android.EnableImpeller"'),
+      );
+      expect(manifest, contains('android:value="false"'));
       expect(
         manifest,
         contains('android:roundIcon="@mipmap/ic_launcher_round"'),
@@ -65,17 +65,39 @@ void main() {
         adaptiveRoundIcon.readAsStringSync(),
         contains('@color/ic_launcher_background'),
       );
-      expect(adaptiveBackground.readAsStringSync(), contains('#730005'));
+      expect(adaptiveBackground.readAsStringSync(), contains('#1F4F8D'));
       expect(xxxhdpiIcon.lengthSync(), greaterThan(10000));
       expect(xxxhdpiForeground.lengthSync(), greaterThan(10000));
-      expect(_isNearWhite(cornerPixel), isFalse);
-      expect(_isNearMaroon(insetPixel), isTrue);
-      expect(whiteTextPixels, lessThan(100));
-      expect(maroonBackgroundPixels, greaterThan(4500));
+      expect(_isNearIconBlue(cornerPixel), isTrue);
+      expect(_isNearIconBlue(insetPixel), isTrue);
+      expect(blueBackgroundPixels, greaterThan(2000));
       final foreground = await _decodeImage(xxxhdpiForeground);
       expect(await _alphaAt(foreground, 0, 0), 0);
+      expect(
+        _isNearLogoDeepRed(
+          await _pixelAt(
+            foreground,
+            foreground.width ~/ 2,
+            _logoTopInset(foreground.width) + (foreground.width * 0.05).round(),
+          ),
+        ),
+        isTrue,
+      );
     },
   );
+
+  test('Today logo asset contains only the circular logo artwork', () async {
+    final logo = await _decodeImage(File('assets/images/barom_kagyu_logo.png'));
+
+    expect(await _alphaAt(logo, 0, 0), 0);
+    expect(await _alphaAt(logo, 10, 10), 0);
+    expect(_isNearLogoGold(await _pixelAt(logo, logo.width ~/ 2, 4)), isTrue);
+    expect(
+      _isNearLogoDeepRed(await _pixelAt(logo, logo.width ~/ 2, 20)),
+      isTrue,
+    );
+    expect(await _alphaAt(logo, logo.width ~/ 2, logo.height ~/ 2), 255);
+  });
 
   test('iOS bundle uses Barom Kagyu Calendar app name and background sync', () {
     final plist = File('ios/Runner/Info.plist').readAsStringSync();
@@ -127,21 +149,38 @@ Future<int> _alphaAt(Image image, int x, int y) async {
   return pixels[offset + 3];
 }
 
-bool _isNearWhite(int rgba) {
+bool _isNearLogoDeepRed(int rgba) {
   final red = (rgba >> 24) & 0xff;
   final green = (rgba >> 16) & 0xff;
   final blue = (rgba >> 8) & 0xff;
-  return red > 245 && green > 245 && blue > 245;
+  return red >= 90 && red <= 150 && green <= 25 && blue <= 30;
 }
 
-bool _isNearMaroon(int rgba) {
+bool _isNearLogoGold(int rgba) {
   final red = (rgba >> 24) & 0xff;
   final green = (rgba >> 16) & 0xff;
   final blue = (rgba >> 8) & 0xff;
-  return red >= 70 && red <= 130 && green < 20 && blue < 20;
+  return red >= 220 && green >= 145 && green <= 200 && blue <= 50;
 }
 
-Future<int> _nearWhitePixelsInBand(
+bool _isNearIconBlue(int rgba) {
+  final red = (rgba >> 24) & 0xff;
+  final green = (rgba >> 16) & 0xff;
+  final blue = (rgba >> 8) & 0xff;
+  return red >= 20 &&
+      red <= 42 &&
+      green >= 68 &&
+      green <= 90 &&
+      blue >= 128 &&
+      blue <= 152;
+}
+
+int _logoTopInset(int size) {
+  final logoSize = (size * 0.76).round();
+  return ((size - logoSize) / 2).round();
+}
+
+Future<int> _nearIconBluePixelsInBand(
   Image image, {
   required double topRatio,
   required double bottomRatio,
@@ -157,29 +196,14 @@ Future<int> _nearWhitePixelsInBand(
       final red = pixels[offset];
       final green = pixels[offset + 1];
       final blue = pixels[offset + 2];
-      if (red > 245 && green > 245 && blue > 245) count++;
-    }
-  }
-  return count;
-}
-
-Future<int> _nearMaroonPixelsInBand(
-  Image image, {
-  required double topRatio,
-  required double bottomRatio,
-}) async {
-  final byteData = await image.toByteData(format: ImageByteFormat.rawRgba);
-  final pixels = byteData!.buffer.asUint8List();
-  final top = (image.height * topRatio).round();
-  final bottom = (image.height * bottomRatio).round();
-  var count = 0;
-  for (var y = top; y < bottom; y++) {
-    for (var x = 0; x < image.width; x++) {
-      final offset = (y * image.width + x) * 4;
-      final red = pixels[offset];
-      final green = pixels[offset + 1];
-      final blue = pixels[offset + 2];
-      if (red >= 70 && red <= 130 && green < 20 && blue < 20) count++;
+      if (red >= 20 &&
+          red <= 42 &&
+          green >= 68 &&
+          green <= 90 &&
+          blue >= 128 &&
+          blue <= 152) {
+        count++;
+      }
     }
   }
   return count;

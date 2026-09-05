@@ -9,6 +9,7 @@ import '../data/teaching_content_database.dart';
 const _teachingRed = Color(0xFF9B141B);
 const _joinRed = Color(0xFFE60000);
 const _cardBorder = Color(0xFFEADCAE);
+const _teachingCardBackground = Color(0xFFFFF4D6);
 
 class TeachingsScreen extends StatefulWidget {
   const TeachingsScreen({
@@ -140,19 +141,24 @@ class _OnlineTeachingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final status = item.statusAt(now);
+    final hasImage = item.imageUrl.trim().isNotEmpty;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 14),
-      color: Colors.white,
+      color: _teachingCardBackground,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
         side: const BorderSide(color: _cardBorder),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (hasImage) ...[
+              _OnlineTeachingImage(item: item),
+              const SizedBox(height: 18),
+            ],
             Text(
               item.title,
               style: theme.textTheme.headlineSmall?.copyWith(
@@ -168,14 +174,6 @@ class _OnlineTeachingCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 4,
               children: [
-                Text(
-                  'Practice:',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    color: _teachingRed,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0,
-                  ),
-                ),
                 Text(
                   item.practice,
                   style: theme.textTheme.titleLarge?.copyWith(
@@ -232,6 +230,39 @@ class _OnlineTeachingCard extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OnlineTeachingImage extends StatelessWidget {
+  const _OnlineTeachingImage({required this.item});
+
+  final OnlineTeachingRow item;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: ColoredBox(
+        color: _teachingCardBackground,
+        child: Image.network(
+          item.imageUrl,
+          key: ValueKey('online-teaching-image-${item.id}'),
+          width: double.infinity,
+          height: 230,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return SizedBox(
+              width: double.infinity,
+              height: 230,
+              child: Icon(
+                Icons.image_not_supported_outlined,
+                color: _teachingRed.withValues(alpha: 0.7),
+              ),
+            );
+          },
         ),
       ),
     );
