@@ -109,6 +109,10 @@ class SharedPreferencesCalendarStore implements CalendarStore {
           'month_element_animal_en': row.monthElementAnimalEn,
           'year_number_text': row.yearNumberText,
           'year_element_animal_en': row.yearElementAnimalEn,
+          'is_practice_day': row.isPracticeDay,
+          'practice_day_title': row.practiceDayTitle,
+          'practice_day_description': row.practiceDayDescription,
+          'practice_day_image_url': row.practiceDayImageUrl,
           'status': row.status,
         }),
     ]);

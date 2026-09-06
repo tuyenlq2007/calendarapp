@@ -150,6 +150,40 @@ void main() {
     expect(storedRow.dayNumberText, '10');
     expect(storedRow.dayElementAnimalEn, 'Earth Dragon');
   });
+
+  test('persists practice day fields for published rows', () async {
+    final preferences = SharedPreferencesAsync();
+    final store = SharedPreferencesCalendarStore(preferences);
+
+    await store.upsertOrWithdraw(
+      CalendarFeedRow.fromJson({
+        'id': 'entry',
+        'version': 1,
+        'gregorian_date': '2027-01-02',
+        'tibetan_date_text': '10th lunar day',
+        'title_en': 'Normal calendar title',
+        'title_bo': 'Published Tibetan title',
+        'description_en': '',
+        'description_bo': '',
+        'is_practice_day': true,
+        'practice_day_title': 'Green Tara Practice',
+        'practice_day_description': 'Practice of Green Tara.',
+        'practice_day_image_url': 'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG',
+        'status': 'published',
+      }),
+    );
+
+    final restartedStore = SharedPreferencesCalendarStore(preferences);
+    final storedRow = (await restartedStore.publishedEntries()).single;
+
+    expect(storedRow.isPracticeDay, isTrue);
+    expect(storedRow.practiceDayTitle, 'Green Tara Practice');
+    expect(storedRow.practiceDayDescription, 'Practice of Green Tara.');
+    expect(
+      storedRow.practiceDayImageUrl,
+      'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG',
+    );
+  });
 }
 
 CalendarFeedRow row(String id, {required String status}) {

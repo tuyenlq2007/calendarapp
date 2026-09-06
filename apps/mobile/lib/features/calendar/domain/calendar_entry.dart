@@ -2,6 +2,7 @@ import '../data/calendar_database.dart';
 
 class CalendarEntry {
   const CalendarEntry({
+    this.id = '',
     required this.day,
     required this.weekday,
     required this.tibetanDateText,
@@ -21,8 +22,13 @@ class CalendarEntry {
     required this.lunarDay,
     this.isHighlighted = false,
     this.isDharmicDay = false,
+    this.isPracticeDay = false,
+    this.practiceDayTitle,
+    this.practiceDayDescription,
+    this.practiceDayImageUrl,
   });
 
+  final String id;
   final int day;
   final String weekday;
   final String tibetanDateText;
@@ -42,6 +48,10 @@ class CalendarEntry {
   final int lunarDay;
   final bool isHighlighted;
   final bool isDharmicDay;
+  final bool isPracticeDay;
+  final String? practiceDayTitle;
+  final String? practiceDayDescription;
+  final String? practiceDayImageUrl;
 }
 
 class CalendarMonth {
@@ -73,6 +83,7 @@ class CalendarMonth {
 
 CalendarEntry calendarEntryFromFeedRow(CalendarFeedRow row) {
   return CalendarEntry(
+    id: row.id,
     day: row.gregorianDate.day,
     weekday: row.gregorianDate.weekdayName,
     tibetanDateText: row.tibetanDateText,
@@ -91,6 +102,10 @@ CalendarEntry calendarEntryFromFeedRow(CalendarFeedRow row) {
     yearElementAnimalEn: row.yearElementAnimalEn,
     lunarDay: row.gregorianDate.day,
     isDharmicDay: true,
+    isPracticeDay: row.isPracticeDay,
+    practiceDayTitle: row.practiceDayTitle,
+    practiceDayDescription: row.practiceDayDescription,
+    practiceDayImageUrl: row.practiceDayImageUrl,
   );
 }
 

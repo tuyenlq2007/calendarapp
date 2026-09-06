@@ -1,6 +1,6 @@
 begin;
 
-select plan(14);
+select plan(15);
 
 create temporary table calendar_test_versions (
   name text primary key,
@@ -152,6 +152,18 @@ where id = (
 
 update public.calendar_entries
 set element_tibetan_line = 'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།'
+where id = (
+  select id
+  from calendar_test_versions
+  where name = 'Published update target'
+);
+
+update public.calendar_entries
+set
+  is_practice_day = true,
+  practice_day_title = 'Green Tara Practice',
+  practice_day_description = 'Practice of Green Tara.',
+  practice_day_image_url = 'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG'
 where id = (
   select id
   from calendar_test_versions
@@ -347,6 +359,30 @@ select is(
   ),
   'ས་ཆུ་འཕྲད་པ་བདེ་སྐྱིད། ས་ཆུ་སྦྱོར་བས་དགེ་བ་འཕེལ།',
   'public feed includes the daily element Tibetan line'
+);
+
+select is(
+  (
+    select row(
+      is_practice_day,
+      practice_day_title,
+      practice_day_description,
+      practice_day_image_url
+    )::text
+    from public.calendar_changes(0)
+    where id = (
+      select id
+      from calendar_test_versions
+      where name = 'Published update target'
+    )
+  ),
+  row(
+    true,
+    'Green Tara Practice',
+    'Practice of Green Tara.',
+    'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG'
+  )::text,
+  'public feed includes explicit practice day fields'
 );
 
 select is(

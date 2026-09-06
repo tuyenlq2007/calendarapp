@@ -230,6 +230,9 @@ class _SelectedDayPanel extends StatelessWidget {
               const _SacredSymbol(),
             ],
           ),
+          if (entry != null && entry!.isPracticeDay) ...[
+            _PracticeDaySection(entry: entry!),
+          ],
           if (entry != null) ...[
             const SizedBox(height: 34),
             Text(
@@ -237,7 +240,7 @@ class _SelectedDayPanel extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                 color: _textDark,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.normal,
                 height: 1.16,
                 letterSpacing: 0,
               ),
@@ -248,7 +251,7 @@ class _SelectedDayPanel extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: _textDark,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.normal,
                 height: 1.12,
                 letterSpacing: 0,
               ),
@@ -260,13 +263,99 @@ class _SelectedDayPanel extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: _green,
                 fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.normal,
                 height: 1.2,
                 letterSpacing: 0,
               ),
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _PracticeDaySection extends StatelessWidget {
+  const _PracticeDaySection({required this.entry});
+
+  final CalendarEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = entry.practiceDayImageUrl?.trim() ?? '';
+    final title = entry.practiceDayTitle?.trim() ?? '';
+    final description = entry.practiceDayDescription?.trim() ?? '';
+    final children = <Widget>[];
+
+    if (imageUrl.isNotEmpty) {
+      children.add(
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320, maxHeight: 260),
+            child: Image.network(
+              imageUrl,
+              key: ValueKey(
+                entry.id.isEmpty
+                    ? 'practice-day-image-${entry.day}'
+                    : 'practice-day-image-${entry.id}',
+              ),
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return SizedBox(
+                  width: 180,
+                  height: 140,
+                  child: Icon(
+                    Icons.image_not_supported_outlined,
+                    color: _maroon.withValues(alpha: 0.7),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (title.isNotEmpty) {
+      if (children.isNotEmpty) children.add(const SizedBox(height: 14));
+      children.add(
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: _maroon,
+            fontWeight: FontWeight.w900,
+            height: 1.12,
+            letterSpacing: 0,
+          ),
+        ),
+      );
+    }
+
+    if (description.isNotEmpty) {
+      if (children.isNotEmpty) children.add(const SizedBox(height: 8));
+      children.add(
+        Text(
+          description,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+            color: _green,
+            fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.normal,
+            height: 1.25,
+            letterSpacing: 0,
+          ),
+        ),
+      );
+    }
+
+    if (children.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: children,
       ),
     );
   }
@@ -378,7 +467,7 @@ class _ElementPanel extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: _textDark,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.normal,
                 height: 1.18,
                 letterSpacing: 0,
               ),
@@ -390,7 +479,7 @@ class _ElementPanel extends StatelessWidget {
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: _textDark,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.normal,
               height: 1.12,
               letterSpacing: 0,
             ),
@@ -400,7 +489,7 @@ class _ElementPanel extends StatelessWidget {
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: _blue,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.normal,
               height: 1.12,
               letterSpacing: 0,
             ),
@@ -411,7 +500,7 @@ class _ElementPanel extends StatelessWidget {
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: _textDark,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.normal,
               height: 1.16,
               letterSpacing: 0,
             ),

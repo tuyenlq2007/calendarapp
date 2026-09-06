@@ -25,6 +25,18 @@ String monthName(int month) {
   };
 }
 
+Color? _calendarDayCellColor(WidgetTester tester, int day) {
+  final container = tester.widget<Container>(
+    find
+        .descendant(
+          of: find.byKey(ValueKey('day-cell-$day')),
+          matching: find.byType(Container),
+        )
+        .first,
+  );
+  return (container.decoration as BoxDecoration?)?.color;
+}
+
 void main() {
   testWidgets('today screen shows bilingual Barom Kagyu calendar content', (
     WidgetTester tester,
@@ -157,6 +169,106 @@ void main() {
     },
   );
 
+  testWidgets('today screen renders daily calendar text with normal weight', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2027, 1, 2),
+        calendarStore: () async => [
+          CalendarFeedRow.fromJson({
+            'id': 'daily-style-entry',
+            'version': 1,
+            'gregorian_date': '2027-01-02',
+            'tibetan_date_text': 'Practice lunar day',
+            'title_en': 'Avoid starting war/litigation',
+            'title_bo': 'Published Tibetan title',
+            'description_en': 'Good day for fire puja Sojong.',
+            'description_bo': '',
+            'status': 'published',
+          }),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<Text>(find.text('Practice lunar day').first)
+          .style
+          ?.fontWeight,
+      FontWeight.normal,
+    );
+    expect(
+      tester
+          .widget<Text>(find.text('Avoid starting war/litigation'))
+          .style
+          ?.fontWeight,
+      FontWeight.normal,
+    );
+    expect(
+      tester
+          .widget<Text>(find.text('Good day for fire puja Sojong.'))
+          .style
+          ?.fontWeight,
+      FontWeight.normal,
+    );
+  });
+
+  testWidgets('today screen renders element text with normal weight', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2027, 1, 2),
+        calendarStore: () async => [
+          CalendarFeedRow.fromJson({
+            'id': 'element-style-entry',
+            'version': 1,
+            'gregorian_date': '2027-01-02',
+            'tibetan_date_text': 'Practice lunar day',
+            'title_en': 'Normal daily title',
+            'title_bo': 'Published Tibetan title',
+            'description_en': 'Normal daily description.',
+            'description_bo': 'Published Tibetan description',
+            'element_tibetan_line': 'Element Tibetan line',
+            'element_pair_en': 'Earth - Wind',
+            'element_combination_title_en': 'Negative Elemental Combination',
+            'element_description_en': 'Element description text.',
+            'day_element_animal_en': 'Earth Dragon',
+            'status': 'published',
+          }),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<Text>(find.text('Element Tibetan line')).style?.fontWeight,
+      FontWeight.normal,
+    );
+    expect(
+      tester.widget<Text>(find.text('Earth - Wind')).style?.fontWeight,
+      FontWeight.normal,
+    );
+    expect(
+      tester
+          .widget<Text>(find.text('Negative Elemental Combination'))
+          .style
+          ?.fontWeight,
+      FontWeight.normal,
+    );
+    expect(
+      tester
+          .widget<Text>(find.text('Element description text.'))
+          .style
+          ?.fontWeight,
+      FontWeight.normal,
+    );
+  });
+
   testWidgets(
     'today screen uses database-backed day metadata in the bottom Date cell',
     (WidgetTester tester) async {
@@ -197,6 +309,166 @@ void main() {
   );
 
   testWidgets(
+    'today screen renders practice day details below the day header',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(
+          currentDate: DateTime(2027, 1, 2),
+          calendarStore: () async => [
+            CalendarFeedRow.fromJson({
+              'id': 'practice-day-entry',
+              'version': 1,
+              'gregorian_date': '2027-01-02',
+              'tibetan_date_text': 'Practice lunar day',
+              'title_en': 'Avoid starting war/litigation',
+              'title_bo': 'Published Tibetan title',
+              'description_en': 'Good day for fire puja Sojong.',
+              'description_bo': '',
+              'is_practice_day': true,
+              'practice_day_title': 'Green Tara Practice',
+              'practice_day_description': 'Practice of Green Tara.',
+              'practice_day_image_url': 'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG',
+              'status': 'published',
+            }),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final imageFinder = find.byKey(
+        const ValueKey('practice-day-image-practice-day-entry'),
+      );
+      expect(imageFinder, findsOneWidget);
+      expect(tester.widget<Image>(imageFinder).fit, BoxFit.contain);
+      expect(find.text('Green Tara Practice'), findsOneWidget);
+      expect(find.text('Practice of Green Tara.'), findsOneWidget);
+      expect(find.text('Practice lunar day'), findsWidgets);
+      expect(
+        tester.widget<Text>(find.text('Green Tara Practice')).style?.color,
+        const Color(0xFF9B0F18),
+      );
+      expect(
+        tester.widget<Text>(find.text('Practice of Green Tara.')).style?.color,
+        const Color(0xFF087326),
+      );
+      expect(
+        tester
+            .widget<Text>(find.text('Practice of Green Tara.'))
+            .style
+            ?.fontStyle,
+        FontStyle.italic,
+      );
+      expect(
+        tester
+            .widget<Text>(find.text('Practice of Green Tara.'))
+            .style
+            ?.fontWeight,
+        FontWeight.normal,
+      );
+
+      final dayLogoRect = tester.getRect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is Image &&
+              widget.image is AssetImage &&
+              (widget.image as AssetImage).assetName ==
+                  'assets/images/barom_kagyu_logo.png',
+          description: 'Barom Kagyu logo asset image',
+        ),
+      );
+      final imageRect = tester.getRect(imageFinder);
+      final titleRect = tester.getRect(find.text('Green Tara Practice'));
+      final descriptionRect = tester.getRect(
+        find.text('Practice of Green Tara.'),
+      );
+      final tibetanDateRect = tester.getRect(
+        find.text('Practice lunar day').first,
+      );
+
+      expect(imageRect.top, greaterThan(dayLogoRect.bottom));
+      expect(titleRect.top, greaterThan(imageRect.bottom));
+      expect(descriptionRect.top, greaterThan(titleRect.bottom));
+      expect(tibetanDateRect.top, greaterThan(descriptionRect.bottom));
+    },
+  );
+
+  testWidgets(
+    'today screen does not render practice day details for normal rows',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(
+          currentDate: DateTime(2027, 1, 2),
+          calendarStore: () async => [
+            CalendarFeedRow.fromJson({
+              'id': 'normal-entry',
+              'version': 1,
+              'gregorian_date': '2027-01-02',
+              'tibetan_date_text': 'Normal lunar day',
+              'title_en': 'Good day for fire puja Sojong',
+              'title_bo': 'Published Tibetan title',
+              'description_en': 'Normal daily calendar content.',
+              'description_bo': '',
+              'is_practice_day': false,
+              'practice_day_title': 'Should Not Render',
+              'practice_day_description': 'Should not render either.',
+              'practice_day_image_url':
+                  'https://example.com/should-not-render.jpg',
+              'status': 'published',
+            }),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Should Not Render'), findsNothing);
+      expect(find.text('Should not render either.'), findsNothing);
+      expect(
+        find.byKey(const ValueKey('practice-day-image-normal-entry')),
+        findsNothing,
+      );
+      expect(find.text('Good day for fire puja Sojong'), findsOneWidget);
+    },
+  );
+
+  testWidgets('today screen tolerates missing optional practice day fields', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2027, 1, 2),
+        calendarStore: () async => [
+          CalendarFeedRow.fromJson({
+            'id': 'partial-practice-day-entry',
+            'version': 1,
+            'gregorian_date': '2027-01-02',
+            'tibetan_date_text': 'Partial practice lunar day',
+            'title_en': 'Normal calendar title',
+            'title_bo': 'Published Tibetan title',
+            'description_en': 'Normal daily content.',
+            'description_bo': '',
+            'is_practice_day': true,
+            'status': 'published',
+          }),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(
+      find.byKey(
+        const ValueKey('practice-day-image-partial-practice-day-entry'),
+      ),
+      findsNothing,
+    );
+    expect(find.text('Partial practice lunar day'), findsWidgets);
+    expect(find.text('Normal calendar title'), findsOneWidget);
+  });
+
+  testWidgets(
     'month tab shows a seven column calendar grid with practice days',
     (WidgetTester tester) async {
       await tester.pumpWidget(
@@ -211,14 +483,174 @@ void main() {
       expect(find.byKey(const ValueKey('day-cell-22')), findsOneWidget);
 
       expect(find.text('Dakini day'), findsOneWidget);
+      expect(find.text('No practice days for this month yet.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'calendar highlights only explicit practice days and lists them by date',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        BaromKagyuCalendarApp(
+          currentDate: DateTime(2027, 1, 1),
+          calendarStore: () async => [
+            CalendarFeedRow.fromJson({
+              'id': 'late-practice',
+              'version': 3,
+              'gregorian_date': '2027-01-27',
+              'tibetan_date_text': 'Late lunar day',
+              'title_en': 'Normal late title',
+              'title_bo': 'Published Tibetan title',
+              'description_en': 'Normal late description.',
+              'description_bo': '',
+              'is_practice_day': true,
+              'practice_day_title': 'Late Practice',
+              'practice_day_description': 'Late practice description.',
+              'status': 'published',
+            }),
+            CalendarFeedRow.fromJson({
+              'id': 'normal-entry',
+              'version': 1,
+              'gregorian_date': '2027-01-10',
+              'tibetan_date_text': 'Normal lunar day',
+              'title_en': 'Avoid starting war/litigation; Good day for fire puja Sojong',
+              'title_bo': 'Published Tibetan title',
+              'description_en': 'Normal daily calendar content.',
+              'description_bo': '',
+              'is_practice_day': false,
+              'status': 'published',
+            }),
+            CalendarFeedRow.fromJson({
+              'id': 'early-practice',
+              'version': 2,
+              'gregorian_date': '2027-01-02',
+              'tibetan_date_text': 'Early lunar day',
+              'title_en': 'Normal early title',
+              'title_bo': 'Published Tibetan title',
+              'description_en': 'Normal early description.',
+              'description_bo': '',
+              'is_practice_day': true,
+              'practice_day_title': 'Green Tara Practice',
+              'practice_day_description': 'Practice of Green Tara.',
+              'status': 'published',
+            }),
+            CalendarFeedRow.fromJson({
+              'id': 'next-month-practice',
+              'version': 4,
+              'gregorian_date': '2027-02-01',
+              'tibetan_date_text': 'February lunar day',
+              'title_en': 'February normal title',
+              'title_bo': 'Published Tibetan title',
+              'description_en': 'February normal content.',
+              'description_bo': '',
+              'is_practice_day': true,
+              'practice_day_title': 'February Practice',
+              'status': 'published',
+            }),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Calendar'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('January 2027'), findsOneWidget);
+      expect(
+        find.text(
+          'Avoid starting war/litigation; Good day for fire puja Sojong',
+        ),
+        findsOneWidget,
+      );
+
+      final normalCellColor = _calendarDayCellColor(tester, 10);
+      final earlyPracticeCellColor = _calendarDayCellColor(tester, 2);
+      final latePracticeCellColor = _calendarDayCellColor(tester, 27);
+
+      expect(normalCellColor, Colors.white);
+      expect(earlyPracticeCellColor, isNot(Colors.white));
+      expect(latePracticeCellColor, isNot(Colors.white));
+
       await tester.drag(
         find.byKey(const ValueKey('month-scroll')),
         const Offset(0, -700),
       );
       await tester.pumpAndSettle();
-      expect(find.text('Dharma Protector day'), findsOneWidget);
+
+      expect(find.text('Green Tara Practice'), findsOneWidget);
+      expect(find.text('Late Practice'), findsOneWidget);
+      expect(find.text('February Practice'), findsNothing);
+      final greenTaraRect = tester.getRect(find.text('Green Tara Practice'));
+      final latePracticeRect = tester.getRect(find.text('Late Practice'));
+      expect(greenTaraRect.top, lessThan(latePracticeRect.top));
+      expect(find.text('Practice of Green Tara.'), findsOneWidget);
+      expect(find.text('Late practice description.'), findsOneWidget);
+      expect(find.text('Normal early title'), findsOneWidget);
+      expect(find.text('Normal late title'), findsOneWidget);
     },
   );
+
+  testWidgets('calendar practice days list follows the selected month', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2027, 1, 1),
+        calendarStore: () async => [
+          CalendarFeedRow.fromJson({
+            'id': 'january-practice',
+            'version': 1,
+            'gregorian_date': '2027-01-02',
+            'tibetan_date_text': 'January lunar day',
+            'title_en': 'January normal title',
+            'title_bo': 'Published Tibetan title',
+            'description_en': 'January normal content.',
+            'description_bo': '',
+            'is_practice_day': true,
+            'practice_day_title': 'January Practice',
+            'status': 'published',
+          }),
+          CalendarFeedRow.fromJson({
+            'id': 'february-practice',
+            'version': 2,
+            'gregorian_date': '2027-02-10',
+            'tibetan_date_text': 'February lunar day',
+            'title_en': 'February normal title',
+            'title_bo': 'Published Tibetan title',
+            'description_en': 'February normal content.',
+            'description_bo': '',
+            'is_practice_day': true,
+            'practice_day_title': 'February Practice',
+            'status': 'published',
+          }),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Calendar'));
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const ValueKey('month-scroll')),
+      const Offset(0, -700),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('January Practice'), findsOneWidget);
+    expect(find.text('February Practice'), findsNothing);
+
+    await tester.tap(find.byTooltip('Next month'));
+    await tester.pumpAndSettle();
+    await tester.drag(
+      find.byKey(const ValueKey('month-scroll')),
+      const Offset(0, -700),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('February 2027'), findsOneWidget);
+    expect(find.text('January Practice'), findsNothing);
+    expect(find.text('February Practice'), findsOneWidget);
+  });
 
   testWidgets('calendar tab opens current month when no day is selected', (
     WidgetTester tester,
@@ -1024,6 +1456,7 @@ void main() {
   ) async {
     var calendarRows = <CalendarFeedRow>[];
     var communityRows = <CommunityEntryRow>[];
+    var syncCalls = 0;
 
     await tester.pumpWidget(
       BaromKagyuCalendarApp(
@@ -1032,6 +1465,7 @@ void main() {
         communityStore: () async => communityRows,
         autoSyncInterval: const Duration(minutes: 1),
         syncCalendar: () async {
+          syncCalls++;
           calendarRows = [
             CalendarFeedRow(
               id: 'auto-sync-entry',
@@ -1065,17 +1499,62 @@ void main() {
     );
 
     await tester.pumpAndSettle();
-    expect(find.text('Auto synced practice'), findsNothing);
+    expect(syncCalls, 1);
+    expect(find.text('Auto synced practice'), findsOneWidget);
 
     await tester.pump(const Duration(minutes: 1));
     await tester.pumpAndSettle();
 
+    expect(syncCalls, 2);
     expect(find.text('Auto synced practice'), findsOneWidget);
 
     await tester.tap(find.text('Community'));
     await tester.pumpAndSettle();
 
     expect(find.text('Auto synced community news'), findsOneWidget);
+  });
+
+  testWidgets('fresh install automatically syncs Supabase-backed content', (
+    WidgetTester tester,
+  ) async {
+    var calendarRows = <CalendarFeedRow>[];
+    var syncCalls = 0;
+
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2027, 1, 2),
+        calendarStore: () async => calendarRows,
+        syncCalendar: () async {
+          syncCalls++;
+          calendarRows = [
+            CalendarFeedRow.fromJson({
+              'id': 'fresh-practice-day',
+              'version': 244,
+              'gregorian_date': '2027-01-02',
+              'tibetan_date_text': 'Fresh lunar day',
+              'title_en': 'Fresh normal calendar title',
+              'title_bo': 'Published Tibetan title',
+              'description_en': 'Fresh normal content.',
+              'description_bo': '',
+              'is_practice_day': true,
+              'practice_day_title': 'Dakini Day',
+              'practice_day_description': 'Practice of Green Tara.',
+              'practice_day_image_url': 'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG',
+              'status': 'published',
+            }),
+          ];
+          return DateTime(2027, 1, 2, 8);
+        },
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(syncCalls, 1);
+    expect(find.text('January 2027'), findsOneWidget);
+    expect(find.text('Dakini Day'), findsOneWidget);
+    expect(find.text('Practice of Green Tara.'), findsOneWidget);
+    expect(find.text('Fresh normal calendar title'), findsOneWidget);
   });
 
   testWidgets('failed sync keeps the existing sync status timestamp', (

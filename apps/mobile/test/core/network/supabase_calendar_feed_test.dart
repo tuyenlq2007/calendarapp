@@ -53,6 +53,59 @@ void main() {
     expect(row.dayElementAnimalEn, 'Earth Dragon');
   });
 
+  test('calendar change page parses practice day fields', () {
+    final page = CalendarChangePage.fromJsonRows([
+      {
+        'id': 'practice-day-entry',
+        'version': 9,
+        'gregorian_date': '2027-01-02',
+        'tibetan_date_text': '10th lunar day',
+        'title_en': 'Normal calendar title',
+        'title_bo': 'Published Tibetan title',
+        'description_en': 'Normal calendar description',
+        'description_bo': '',
+        'is_practice_day': true,
+        'practice_day_title': 'Green Tara Practice',
+        'practice_day_description': 'Practice of Green Tara.',
+        'practice_day_image_url': 'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG',
+        'status': 'published',
+      },
+    ]);
+
+    final row = page.entries.single as CalendarFeedRow;
+
+    expect(row.isPracticeDay, isTrue);
+    expect(row.practiceDayTitle, 'Green Tara Practice');
+    expect(row.practiceDayDescription, 'Practice of Green Tara.');
+    expect(
+      row.practiceDayImageUrl,
+      'https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG',
+    );
+  });
+
+  test('calendar change page defaults missing practice day fields safely', () {
+    final page = CalendarChangePage.fromJsonRows([
+      {
+        'id': 'normal-entry',
+        'version': 9,
+        'gregorian_date': '2027-01-02',
+        'tibetan_date_text': '10th lunar day',
+        'title_en': 'Normal calendar title',
+        'title_bo': 'Published Tibetan title',
+        'description_en': 'Normal calendar description',
+        'description_bo': '',
+        'status': 'published',
+      },
+    ]);
+
+    final row = page.entries.single as CalendarFeedRow;
+
+    expect(row.isPracticeDay, isFalse);
+    expect(row.practiceDayTitle, isNull);
+    expect(row.practiceDayDescription, isNull);
+    expect(row.practiceDayImageUrl, isNull);
+  });
+
   test('calendar change page parses published and archived feed rows', () {
     final page = CalendarChangePage.fromJsonRows([
       {

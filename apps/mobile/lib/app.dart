@@ -138,6 +138,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen>
     _loadOnlineTeachings();
     _loadCommunityEntries();
     _startAutoSyncTimer();
+    unawaited(_syncAndRefresh());
   }
 
   @override

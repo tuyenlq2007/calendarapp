@@ -52,6 +52,10 @@ class CalendarFeedRow implements CalendarFeedEntry {
     this.monthElementAnimalEn = '',
     this.yearNumberText = '',
     this.yearElementAnimalEn = '',
+    this.isPracticeDay = false,
+    this.practiceDayTitle,
+    this.practiceDayDescription,
+    this.practiceDayImageUrl,
     required this.status,
   });
 
@@ -78,6 +82,16 @@ class CalendarFeedRow implements CalendarFeedEntry {
       monthElementAnimalEn: _optionalString(json, 'month_element_animal_en'),
       yearNumberText: _optionalString(json, 'year_number_text'),
       yearElementAnimalEn: _optionalString(json, 'year_element_animal_en'),
+      isPracticeDay: _optionalBoolean(json, 'is_practice_day'),
+      practiceDayTitle: _optionalNullableString(json, 'practice_day_title'),
+      practiceDayDescription: _optionalNullableString(
+        json,
+        'practice_day_description',
+      ),
+      practiceDayImageUrl: _optionalNullableString(
+        json,
+        'practice_day_image_url',
+      ),
       status: _string(json, 'status'),
     );
   }
@@ -104,6 +118,10 @@ class CalendarFeedRow implements CalendarFeedEntry {
   final String monthElementAnimalEn;
   final String yearNumberText;
   final String yearElementAnimalEn;
+  final bool isPracticeDay;
+  final String? practiceDayTitle;
+  final String? practiceDayDescription;
+  final String? practiceDayImageUrl;
   final String status;
 
   bool get isWithdrawn => status == 'archived';
@@ -144,6 +162,23 @@ class CalendarFeedRow implements CalendarFeedEntry {
     throw FormatException('calendar feed row field $key must be a string');
   }
 
+  static String? _optionalNullableString(
+    Map<String, Object?> json,
+    String key,
+  ) {
+    final value = json[key];
+    if (value == null) return null;
+    if (value is String) return value;
+    throw FormatException('calendar feed row field $key must be a string');
+  }
+
+  static bool _optionalBoolean(Map<String, Object?> json, String key) {
+    final value = json[key];
+    if (value == null) return false;
+    if (value is bool) return value;
+    throw FormatException('calendar feed row field $key must be a boolean');
+  }
+
   static int _integer(Map<String, Object?> json, String key) {
     final value = json[key];
     if (value is int) return value;
@@ -162,6 +197,10 @@ class CalendarFeedRow implements CalendarFeedEntry {
     String? monthElementAnimalEn,
     String? yearNumberText,
     String? yearElementAnimalEn,
+    bool? isPracticeDay,
+    String? practiceDayTitle,
+    String? practiceDayDescription,
+    String? practiceDayImageUrl,
   }) {
     return CalendarFeedRow(
       id: id,
@@ -183,6 +222,11 @@ class CalendarFeedRow implements CalendarFeedEntry {
       monthElementAnimalEn: monthElementAnimalEn ?? this.monthElementAnimalEn,
       yearNumberText: yearNumberText ?? this.yearNumberText,
       yearElementAnimalEn: yearElementAnimalEn ?? this.yearElementAnimalEn,
+      isPracticeDay: isPracticeDay ?? this.isPracticeDay,
+      practiceDayTitle: practiceDayTitle ?? this.practiceDayTitle,
+      practiceDayDescription:
+          practiceDayDescription ?? this.practiceDayDescription,
+      practiceDayImageUrl: practiceDayImageUrl ?? this.practiceDayImageUrl,
       status: status,
     );
   }

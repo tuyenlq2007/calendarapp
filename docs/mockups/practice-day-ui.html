@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Practice Day UI Mockup</title>
+  <style>
+    :root {
+      --page: #efe4c7;
+      --parchment: #f4d990;
+      --panel: #f8e6b3;
+      --header: #a9181d;
+      --border: #d4a85a;
+      --gold: #f6d985;
+      --text: #2d130d;
+      --maroon: #9b0f18;
+      --blue: #00385d;
+      --green: #087326;
+      --practice: #ffe7a5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--page);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(320px, 390px));
+      gap: 28px;
+      justify-content: center;
+      align-items: start;
+      padding: 28px;
+    }
+
+    .phone {
+      overflow: hidden;
+      min-height: 820px;
+      background: var(--parchment);
+      border: 1px solid #c8aa64;
+      border-radius: 26px;
+      box-shadow: 0 18px 45px rgba(54, 32, 10, .24);
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      padding: 34px 18px 18px;
+      color: var(--gold);
+      background: var(--header);
+      border-radius: 0 0 22px 22px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, .28);
+    }
+
+    .top strong {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .brand {
+      text-align: right;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 25px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .content {
+      padding: 12px;
+    }
+
+    .panel {
+      padding: 26px 18px 22px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .13);
+    }
+
+    .day-head {
+      display: grid;
+      grid-template-columns: 1fr 150px;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .weekday {
+      max-width: 176px;
+      color: var(--maroon);
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .day-number {
+      margin-top: 14px;
+      color: var(--blue);
+      font-size: 140px;
+      font-weight: 900;
+      line-height: .78;
+      text-align: center;
+    }
+
+    .logo {
+      display: block;
+      width: 150px;
+      height: 159px;
+      object-fit: contain;
+    }
+
+    .practice-block {
+      padding-top: 24px;
+      text-align: center;
+    }
+
+    .practice-image {
+      display: block;
+      width: auto;
+      max-width: min(320px, 100%);
+      max-height: 260px;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+
+    .practice-title {
+      margin: 14px 0 0;
+      color: var(--maroon);
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1.12;
+    }
+
+    .practice-description {
+      margin: 8px 0 0;
+      max-width: 280px;
+      margin-left: auto;
+      margin-right: auto;
+      color: var(--green);
+      font-size: 19px;
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.25;
+    }
+
+    .tibetan {
+      margin: 34px 0 0;
+      font-size: 27px;
+      font-weight: 400;
+      line-height: 1.16;
+      text-align: center;
+    }
+
+    .daily-title {
+      margin: 16px 0 0;
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 1.12;
+      text-align: center;
+    }
+
+    .quote {
+      margin: 8px 0 0;
+      color: var(--green);
+      font-size: 23px;
+      font-style: italic;
+      font-weight: 400;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .element {
+      margin-top: 10px;
+      padding: 18px 16px 22px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      text-align: center;
+    }
+
+    .element .line {
+      margin-bottom: 10px;
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1.18;
+    }
+
+    .element .pair,
+    .element .name {
+      font-size: 23px;
+      font-weight: 400;
+      line-height: 1.12;
+    }
+
+    .element .name {
+      color: #0c28d8;
+    }
+
+    .element .desc {
+      margin-top: 8px;
+      font-size: 20px;
+      font-weight: 400;
+      line-height: 1.16;
+    }
+
+    .calendar-top {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto;
+      gap: 8px;
+      align-items: center;
+      padding: 30px 12px 13px;
+      color: #fff;
+      background: #9b0f2e;
+    }
+
+    .calendar-top strong {
+      color: #fff;
+      font-size: 21px;
+      line-height: 1;
+    }
+
+    .icon-button,
+    .today-button {
+      min-width: 34px;
+      min-height: 34px;
+      border: 0;
+      border-radius: 6px;
+      color: #fff;
+      background: transparent;
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .today-button {
+      padding: 0 10px;
+      font-size: 14px;
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      overflow: hidden;
+      padding: 12px 0;
+    }
+
+    .chip {
+      padding: 8px 13px;
+      border: 1px solid #e0c16f;
+      border-radius: 18px;
+      background: #fff7df;
+      color: #3a1717;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .chip.selected {
+      color: #fff;
+      background: #9b0f2e;
+    }
+
+    .week,
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .week div {
+      color: #5e463d;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .week div:last-child {
+      color: #9b0f2e;
+    }
+
+    .grid {
+      margin-top: 8px;
+    }
+
+    .cell {
+      min-height: 65px;
+      padding: 5px;
+      border: 1px solid #e0c16f;
+      border-radius: 6px;
+      background: #fff;
+    }
+
+    .cell.active {
+      color: #fff;
+      background: #9b0f2e;
+    }
+
+    .cell.practice {
+      background: var(--practice);
+    }
+
+    .cell .num {
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .cell .label {
+      margin-top: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.12;
+    }
+
+    .practice-list {
+      margin-top: 16px;
+    }
+
+    .practice-list h2 {
+      margin: 0 0 8px;
+      color: #8b0e2f;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .practice-item {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid #e4c987;
+      border-radius: 8px;
+    }
+
+    .avatar {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      background: #e0a526;
+      font-weight: 800;
+    }
+
+    .item-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .item-subtitle {
+      margin-top: 2px;
+      color: #5e463d;
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    @media (max-width: 760px) {
+      .stage {
+        grid-template-columns: minmax(300px, 390px);
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="phone" aria-label="Day screen mockup">
+      <header class="top">
+        <strong>January 2027</strong>
+        <div class="brand">Barom Kagyu</div>
+      </header>
+      <div class="content">
+        <article class="panel">
+          <div class="day-head">
+            <div>
+              <div class="weekday">SATURDAY</div>
+              <div class="day-number">2</div>
+            </div>
+            <img class="logo" src="../../apps/mobile/assets/images/barom_kagyu_logo.png" alt="Barom Kagyu logo">
+          </div>
+
+          <section class="practice-block">
+            <img
+              class="practice-image"
+              src="https://azfsdtbmxzqomwsepjfx.supabase.co/storage/v1/object/public/images/Tara.JPG"
+              alt="Dakini Day"
+            >
+            <h1 class="practice-title">Dakini Day</h1>
+            <p class="practice-description">Practice of Green Tara.</p>
+          </section>
+
+          <div class="tibetan">སྤེན ས་རི ས་རླུང གྲུབ་ཉི ལེན་པ སྟག ཟིན་ཕུང གཉེན</div>
+          <div class="daily-title">Not a good day for having a feast with relatives</div>
+          <div class="quote">༺༻</div>
+        </article>
+
+        <section class="element">
+          <div class="line">ས་རླུང་འཕྲད་པ་མི་འཕྲོད་སྦྱོར། མི་འཕྲོད་སྦྱོར་བས་ཟས་ནོར་འཛད།</div>
+          <div class="pair">Earth - Wind</div>
+          <div class="name">Negative Elemental Combination</div>
+          <div class="desc">This elemental combination has negative energy that may reduce one's wealth</div>
+        </section>
+      </div>
+    </section>
+
+    <section class="phone" aria-label="Calendar screen mockup">
+      <header class="calendar-top">
+        <strong>January 2027</strong>
+        <button class="icon-button" aria-label="Previous month">&#8249;</button>
+        <button class="icon-button" aria-label="Next month">&#8250;</button>
+        <button class="today-button">Today</button>
+      </header>
+      <div class="content">
+        <nav class="chips" aria-label="Month selector">
+          <span class="chip">Oct</span>
+          <span class="chip">Nov</span>
+          <span class="chip">Dec</span>
+          <span class="chip selected">Jan</span>
+          <span class="chip">Feb</span>
+          <span class="chip">Mar</span>
+        </nav>
+        <div class="week">
+          <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+        </div>
+        <div class="grid">
+          <div class="cell"></div>
+          <div class="cell"></div>
+          <div class="cell"></div>
+          <div class="cell"></div>
+          <div class="cell"><div class="num">1</div><div class="label">Not a good day for starting...</div></div>
+          <div class="cell practice active"><div class="num">2</div><div class="label">Not a good day for having...</div></div>
+          <div class="cell"><div class="num">3</div><div class="label">Not a good day for building...</div></div>
+          <div class="cell"><div class="num">4</div><div class="label">Not a good day for marriage...</div></div>
+          <div class="cell"><div class="num">5</div><div class="label">Not a good day for funeral...</div></div>
+          <div class="cell"><div class="num">6</div><div class="label">Not a good day for making...</div></div>
+          <div class="cell"><div class="num">7</div><div class="label">Not a good day for public...</div></div>
+          <div class="cell"><div class="num">8</div><div class="label">Not a good day for inviting...</div></div>
+          <div class="cell"><div class="num">9</div><div class="label">Not a good day for starting...</div></div>
+          <div class="cell"><div class="num">10</div></div>
+          <div class="cell"><div class="num">11</div></div>
+          <div class="cell"><div class="num">12</div></div>
+          <div class="cell"><div class="num">13</div></div>
+          <div class="cell"><div class="num">14</div></div>
+          <div class="cell"><div class="num">15</div></div>
+          <div class="cell"><div class="num">16</div></div>
+          <div class="cell"><div class="num">17</div></div>
+          <div class="cell"><div class="num">18</div></div>
+          <div class="cell"><div class="num">19</div></div>
+          <div class="cell"><div class="num">20</div></div>
+          <div class="cell"><div class="num">21</div></div>
+          <div class="cell"><div class="num">22</div></div>
+          <div class="cell"><div class="num">23</div></div>
+          <div class="cell"><div class="num">24</div></div>
+          <div class="cell"><div class="num">25</div></div>
+          <div class="cell"><div class="num">26</div></div>
+          <div class="cell"><div class="num">27</div></div>
+          <div class="cell"><div class="num">28</div></div>
+          <div class="cell"><div class="num">29</div></div>
+          <div class="cell"><div class="num">30</div></div>
+          <div class="cell"><div class="num">31</div></div>
+        </div>
+
+        <section class="practice-list">
+          <h2>Practice days</h2>
+          <div class="practice-item">
+            <div class="avatar">2</div>
+            <div>
+              <div class="item-title">Dakini Day</div>
+              <div class="item-subtitle">Practice of Green Tara.</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -30,6 +30,10 @@ class MonthScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localizations = AppLocalizations.of(context);
+    final practiceEntries = [
+      for (final entry in month.entries)
+        if (entry.isPracticeDay) entry,
+    ]..sort((left, right) => left.day.compareTo(right.day));
 
     return CustomScrollView(
       key: const ValueKey('month-scroll'),
@@ -75,7 +79,7 @@ class MonthScreen extends StatelessWidget {
                 onMonthSelected: onMonthSelected,
               ),
               const SizedBox(height: 12),
-              if (month.entries.isEmpty) ...[
+              if (practiceEntries.isEmpty) ...[
                 const Text('No practice days for this month yet.'),
                 const SizedBox(height: 12),
               ],
@@ -87,7 +91,10 @@ class MonthScreen extends StatelessWidget {
                 onEntrySelected: onEntrySelected,
               ),
               const SizedBox(height: 16),
-              _EventList(entries: month.entries),
+              _EventList(
+                entries: practiceEntries,
+                onEntrySelected: onEntrySelected,
+              ),
             ]),
           ),
         ),
@@ -294,7 +301,7 @@ class CalendarDayCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final background = isActive
         ? const Color(0xFF9B0F2E)
-        : entry != null
+        : (entry?.isPracticeDay ?? false)
         ? const Color(0xFFFFE7A5)
         : Colors.white;
     final foreground = isActive ? Colors.white : const Color(0xFF3A1717);
@@ -346,9 +353,10 @@ class CalendarDayCell extends StatelessWidget {
 }
 
 class _EventList extends StatelessWidget {
-  const _EventList({required this.entries});
+  const _EventList({required this.entries, required this.onEntrySelected});
 
   final List<CalendarEntry> entries;
+  final ValueChanged<CalendarEntry>? onEntrySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -365,6 +373,7 @@ class _EventList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: ListTile(
+              onTap: () => onEntrySelected?.call(entry),
               tileColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -377,8 +386,14 @@ class _EventList extends StatelessWidget {
                 foregroundColor: Colors.white,
                 child: Text('${entry.day}'),
               ),
-              title: Text(entry.titleEn),
-              subtitle: Text(entry.tibetanDateText),
+              title: Text(
+                entry.practiceDayTitle?.trim().isNotEmpty ?? false
+                    ? entry.practiceDayTitle!.trim()
+                    : 'Practice day',
+              ),
+              subtitle: entry.practiceDayDescription?.trim().isNotEmpty ?? false
+                  ? Text(entry.practiceDayDescription!.trim())
+                  : null,
             ),
           ),
       ],

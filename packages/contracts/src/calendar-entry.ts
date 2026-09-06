@@ -34,6 +34,10 @@ export const CalendarEntrySchema = z.object({
   descriptionEn: z.string(),
   descriptionBo: z.string(),
   elementTibetanLine: z.string(),
+  isPracticeDay: z.boolean().default(false),
+  practiceDayTitle: z.string().nullable().optional(),
+  practiceDayDescription: z.string().nullable().optional(),
+  practiceDayImageUrl: z.string().nullable().optional(),
   status: PublicationStatusSchema,
   version: z.number().int().positive(),
 });
