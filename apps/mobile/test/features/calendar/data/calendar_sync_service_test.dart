@@ -36,23 +36,58 @@ void main() {
     expect(store.upsertedEntries, isEmpty);
     expect(await store.currentVersion(), 4);
   });
+
+  test('stale local cursor is replaced by a full published snapshot', () async {
+    final feed = FakeFeed(
+      fullSnapshotEntries: [FakeCalendarEntry('fresh', version: 3)],
+      entriesByVersion: {20: []},
+    );
+    final store = SnapshotCalendarStore(
+      version: 20,
+      entries: {'stale': FakeCalendarEntry('stale', version: 20)},
+    );
+    final service = CalendarSyncService(feed, store);
+
+    await service.sync();
+
+    expect(feed.requestedVersions, [20, 0]);
+    expect(store.entryIds, ['fresh']);
+    expect(await store.currentVersion(), 3);
+  });
 }
 
 class FakeFeed implements CalendarFeed {
-  FakeFeed({List<FakeCalendarEntry>? entries})
+  FakeFeed({
+    List<FakeCalendarEntry>? entries,
+    List<FakeCalendarEntry>? fullSnapshotEntries,
+    Map<int, List<FakeCalendarEntry>>? entriesByVersion,
+  })
     : entries =
           entries ??
           [
             FakeCalendarEntry('good', version: 5),
             FakeCalendarEntry('bad', version: 6),
-          ];
+          ],
+      fullSnapshotEntries = fullSnapshotEntries ?? entries,
+      entriesByVersion = entriesByVersion ?? const {};
 
   final List<FakeCalendarEntry> entries;
+  final List<FakeCalendarEntry>? fullSnapshotEntries;
+  final Map<int, List<FakeCalendarEntry>> entriesByVersion;
   int? afterVersion;
+  final List<int> requestedVersions = [];
 
   @override
   Future<CalendarChangePage> changesAfter(int version) async {
+    requestedVersions.add(version);
     afterVersion = version;
+    if (version == 0 && fullSnapshotEntries != null) {
+      return CalendarChangePage(entries: fullSnapshotEntries!);
+    }
+    final versionEntries = entriesByVersion[version];
+    if (versionEntries != null) {
+      return CalendarChangePage(entries: versionEntries);
+    }
     return CalendarChangePage(entries: entries);
   }
 }
@@ -107,4 +142,47 @@ class FakeCalendarEntry implements CalendarFeedEntry {
 
   @override
   void validate() {}
+}
+
+class SnapshotCalendarStore implements CalendarSnapshotStore {
+  SnapshotCalendarStore({
+    required this.version,
+    required Map<String, FakeCalendarEntry> entries,
+  }) : _entries = Map<String, FakeCalendarEntry>.of(entries);
+
+  int version;
+  final Map<String, FakeCalendarEntry> _entries;
+
+  List<String> get entryIds => _entries.keys.toList()..sort();
+
+  @override
+  Future<int> currentVersion() async => version;
+
+  @override
+  Future<void> replaceWithPublishedSnapshot(
+    Iterable<CalendarFeedEntry> entries, {
+    required int version,
+  }) async {
+    _entries
+      ..clear()
+      ..addEntries(
+        entries.map((entry) => MapEntry(entry.id, entry as FakeCalendarEntry)),
+      );
+    this.version = version;
+  }
+
+  @override
+  Future<void> setCurrentVersion(int version) async {
+    this.version = version;
+  }
+
+  @override
+  Future<void> transaction(Future<void> Function() action) async {
+    await action();
+  }
+
+  @override
+  Future<void> upsertOrWithdraw(CalendarFeedEntry entry) async {
+    _entries[entry.id] = entry as FakeCalendarEntry;
+  }
 }

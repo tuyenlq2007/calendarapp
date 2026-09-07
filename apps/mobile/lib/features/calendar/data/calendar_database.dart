@@ -12,6 +12,13 @@ abstract interface class CalendarStore {
   Future<void> setCurrentVersion(int version);
 }
 
+abstract interface class CalendarSnapshotStore implements CalendarStore {
+  Future<void> replaceWithPublishedSnapshot(
+    Iterable<CalendarFeedEntry> entries, {
+    required int version,
+  });
+}
+
 abstract interface class CalendarFeedEntry {
   String get id;
 

@@ -183,7 +183,7 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen>
         onEntrySelected: _selectCalendarEntry,
         onPreviousMonth: _selectPreviousMonth,
         onNextMonth: _selectNextMonth,
-        onMonthSelected: _selectMonthOfYear,
+        onMonthSelected: _selectMonth,
         onTodaySelected: _selectToday,
       ),
       TeachingsScreen(
@@ -489,9 +489,9 @@ class _CalendarHomeScreenState extends State<CalendarHomeScreen>
     });
   }
 
-  void _selectMonthOfYear(int month) {
+  void _selectMonth(DateTime month) {
     setState(() {
-      _selectedMonth = DateTime(_selectedMonth.year, month);
+      _selectedMonth = DateTime(month.year, month.month);
       _selectedDate = null;
       _selectedCalendarEntry = null;
     });

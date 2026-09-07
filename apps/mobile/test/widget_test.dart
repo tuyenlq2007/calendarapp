@@ -860,6 +860,56 @@ void main() {
     },
   );
 
+  testWidgets('calendar month selector preserves years across year boundary', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      BaromKagyuCalendarApp(
+        currentDate: DateTime(2026, 12, 15),
+        calendarStore: () async => [
+          CalendarFeedRow(
+            id: 'december-entry',
+            version: 1,
+            gregorianDate: DateTime(2026, 12, 15),
+            tibetanDateText: 'December lunar day',
+            titleEn: 'December Practice',
+            titleBo: 'December Tibetan title',
+            descriptionEn: 'Practice for December.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+          CalendarFeedRow(
+            id: 'january-entry',
+            version: 2,
+            gregorianDate: DateTime(2027, 1, 15),
+            tibetanDateText: 'January lunar day',
+            titleEn: 'January Practice',
+            titleBo: 'January Tibetan title',
+            descriptionEn: 'Practice for January.',
+            descriptionBo: '',
+            status: 'published',
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Calendar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('December 2026'), findsOneWidget);
+
+    await tester.tap(find.text('Jan'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('January 2027'), findsOneWidget);
+
+    await tester.tap(find.text('Dec'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('December 2026'), findsOneWidget);
+  });
+
   testWidgets('calendar header Today opens Today tab with current day', (
     WidgetTester tester,
   ) async {

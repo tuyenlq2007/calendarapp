@@ -24,7 +24,7 @@ class MonthScreen extends StatelessWidget {
   final ValueChanged<CalendarEntry>? onEntrySelected;
   final VoidCallback? onPreviousMonth;
   final VoidCallback? onNextMonth;
-  final ValueChanged<int>? onMonthSelected;
+  final ValueChanged<DateTime>? onMonthSelected;
   final VoidCallback? onTodaySelected;
 
   @override
@@ -112,7 +112,7 @@ class _MonthSelector extends StatelessWidget {
 
   final DateTime selectedMonth;
   final DateTime currentMonth;
-  final ValueChanged<int>? onMonthSelected;
+  final ValueChanged<DateTime>? onMonthSelected;
 
   static const _labels = [
     'Jan',
@@ -142,7 +142,7 @@ class _MonthSelector extends StatelessWidget {
         children: [
           for (final visibleMonth in visibleMonths) ...[
             _MonthChip(
-              month: visibleMonth.month,
+              visibleMonth: visibleMonth,
               label: _labels[visibleMonth.month - 1],
               selectedMonth: selectedMonth,
               currentMonth: currentMonth,
@@ -158,24 +158,28 @@ class _MonthSelector extends StatelessWidget {
 
 class _MonthChip extends StatelessWidget {
   const _MonthChip({
-    required this.month,
+    required this.visibleMonth,
     required this.label,
     required this.selectedMonth,
     required this.currentMonth,
     required this.onMonthSelected,
   });
 
-  final int month;
+  final DateTime visibleMonth;
   final String label;
   final DateTime selectedMonth;
   final DateTime currentMonth;
-  final ValueChanged<int>? onMonthSelected;
+  final ValueChanged<DateTime>? onMonthSelected;
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = selectedMonth.month == month;
+    final month = visibleMonth.month;
+    final isSelected =
+        selectedMonth.year == visibleMonth.year &&
+        selectedMonth.month == visibleMonth.month;
     final isCurrent =
-        currentMonth.year == selectedMonth.year && currentMonth.month == month;
+        currentMonth.year == visibleMonth.year &&
+        currentMonth.month == visibleMonth.month;
     final chip = ChoiceChip(
       key: ValueKey('month-chip-$month'),
       label: Text(label),
@@ -189,7 +193,7 @@ class _MonthChip extends StatelessWidget {
         color: isCurrent ? const Color(0xFF9B0F2E) : const Color(0xFFE0C16F),
         width: isCurrent ? 2 : 1,
       ),
-      onSelected: (_) => onMonthSelected?.call(month),
+      onSelected: (_) => onMonthSelected?.call(visibleMonth),
     );
 
     Widget keyedChip = KeyedSubtree(

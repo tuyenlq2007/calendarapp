@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'calendar_database.dart';
 
-class SharedPreferencesCalendarStore implements CalendarStore {
+class SharedPreferencesCalendarStore implements CalendarSnapshotStore {
   SharedPreferencesCalendarStore(this.preferences);
 
   static const _versionKey = 'calendar.sync.version';
@@ -46,6 +46,24 @@ class SharedPreferencesCalendarStore implements CalendarStore {
       entries[row.id] = row;
     }
     await _writeEntries(entries);
+  }
+
+  @override
+  Future<void> replaceWithPublishedSnapshot(
+    Iterable<CalendarFeedEntry> entries, {
+    required int version,
+  }) async {
+    final snapshot = <String, CalendarFeedRow>{};
+    for (final entry in entries) {
+      final row = entry as CalendarFeedRow;
+      if (row.isWithdrawn) {
+        snapshot.remove(row.id);
+      } else {
+        snapshot[row.id] = row;
+      }
+    }
+    await _writeEntries(snapshot);
+    await setCurrentVersion(version);
   }
 
   Future<List<CalendarFeedRow>> publishedEntries() async {
